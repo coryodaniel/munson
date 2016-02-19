@@ -1,0 +1,20 @@
+{
+  "data" :{
+    "type": "articles",
+    "id": "2",
+    "attributes": {
+      "title": "Quinoa artisan kinfolk, man braid bushwick poutine blue bottle."
+    },
+    "links": {
+      "self": "http://api.example.com/articles/2"
+    },
+    "relationships": {
+      "author": {
+        "links": {
+          "self": "http://api.example.com/articles/2/relationships/author",
+          "related": "http://api.example.com/articles/2/author"
+        }
+      }
+    }
+  }
+}
