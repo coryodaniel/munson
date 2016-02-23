@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Cory O'Daniel"]
   spec.email         = ["cory@coryodaniel.com"]
 
-  spec.summary       = %q{A JSON API Spec ORM}
+  spec.summary       = %q{A JSON API Spec client for Ruby}
   spec.homepage      = "http://github.com/coryodaniel/munson"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or

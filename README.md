@@ -1,6 +1,6 @@
 # Munson
 
-A JSON API Spec ORM
+A JSON API Spec client for Ruby.
 
 ## Installation
 
