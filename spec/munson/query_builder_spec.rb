@@ -178,16 +178,6 @@ describe Munson::QueryBuilder do
         to include(users: %w(first_name last_name), address: :zip_code)
     end
 
-    context 'passing an array when the type is set' do
-      pending 'sets the key based on the type' do
-        query_builder = Munson::QueryBuilder.new type: 'users'
-        query_builder.fields(:first_name, :last_name, address: :zip_code)
-
-        expect(query_builder.query[:fields]).
-          to include(users: %w(first_name last_name), address: :zip_code)
-      end
-    end
-
     context 'multiple calls' do
       it 'appends the fields options' do
         query_builder = Munson::QueryBuilder.new
