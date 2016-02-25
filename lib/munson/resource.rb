@@ -13,9 +13,13 @@ module Munson
     end
 
     class_methods do
-      def has_many(*);end;
-      def has_one(*);end;
-      def belongs_to(*);end;
+      [:includes, :sort, :filter, :fields, :fetch, :find, :page].each do |method|
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{method}(*args)
+            munson.#{method}(*args)
+          end
+        RUBY
+      end
     end
   end
 end

@@ -1,10 +1,10 @@
 module Munson
   module Middleware
     class JsonParser < Faraday::Middleware
-      def call(env)
-        @app.call(env).on_complete do |env|
-          env[:raw_body] = env[:body]
-          env[:body] = parse(env[:body])
+      def call(request_env)
+        @app.call(request_env).on_complete do |response_env|
+          response_env[:raw_body] = response_env[:body]
+          response_env[:body] = parse(response_env[:body])
         end
       end
 
@@ -12,7 +12,7 @@ module Munson
 
       def parse(body)
         unless body.strip.empty?
-          ::JSON.parse(body)
+          ::JSON.parse(body, symbolize_names: true)
         else
           {}
         end

@@ -6,7 +6,6 @@ require 'pry-byebug'
 require 'support/macros/json_api_document_macros'
 require 'support/macros/model_macros'
 require 'support/matchers/have_data'
-require 'support/app'
 
 WebMock.disable_net_connect!
 

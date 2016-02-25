@@ -1,14 +1,52 @@
 require 'spec_helper'
 
 describe Munson::Resource do
-  pending 'package response in Active::Model'
-  pending 'adding custom member routes'
-  pending 'adding custom collection routes'
+  before{ Munson.configure url: 'http://api.example.com' }
 
-  describe '.munson.connection' do
-    it 'defaults to the default connection' do
-      spawn_model 'Foo'
-      expect(Foo.munson.connection).to be Munson.default_connection
+  describe '#find' do
+    it 'returns the resource' do
+      stub_json_get("http://api.example.com/articles/1", :article_1)
+      spawn_model 'Article'
+
+      resources = Article.find(1)
+      expect(resources).to have_data(:article_1)
+    end
+  end
+
+  describe '#includes' do
+    it 'returns a QueryBuilder' do
+      spawn_model 'Article'
+
+      query = Article.includes(:author)
+      expect(query).to be_a Munson::QueryBuilder
+    end
+  end
+
+  describe '#page' do
+    it 'returns a QueryBuilder' do
+      spawn_model 'Article'
+      Article.munson.paginator = :offset
+
+      query = Article.page(limit: 100)
+      expect(query).to be_a Munson::QueryBuilder
+    end
+  end
+
+  describe '#filter' do
+    it 'returns a QueryBuilder' do
+      spawn_model 'Article'
+
+      query = Article.filter(category: 'kittens')
+      expect(query).to be_a Munson::QueryBuilder
+    end
+  end
+
+  describe '#sort' do
+    it 'returns a QueryBuilder' do
+      spawn_model 'Article'
+
+      query = Article.sort(:title)
+      expect(query).to be_a Munson::QueryBuilder
     end
   end
 
@@ -43,6 +81,13 @@ describe Munson::Resource do
       expect{ Quux.munson.path= :qeex }.
         to change{ Quux.munson.path }.
         from('quuxes').to(:qeex)
+    end
+  end
+
+  describe '.munson.connection' do
+    it 'defaults to the default connection' do
+      spawn_model 'Foo'
+      expect(Foo.munson.connection).to be Munson.default_connection
     end
   end
 end

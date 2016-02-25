@@ -1,9 +1,21 @@
 module Munson
   class QueryBuilder
     attr_reader :query
+    attr_reader :paginator
+    attr_reader :agent
     class UnsupportedSortDirectionError < StandardError; end;
+    class PaginatorNotSet < StandardError; end;
+    class AgentNotSet < StandardError; end;
 
-    def initialize
+    # Description of method
+    #
+    # @param [Class] paginator: nil instantiated paginator
+    # @param [Class] agent: nil instantiated agent to use for fetching results
+    # @return [Type] description of returned object
+    def initialize(paginator: nil, agent: nil)
+      @paginator = paginator
+      @agent = agent
+
       @query = {
         include: [],
         fields:  [],
@@ -12,15 +24,8 @@ module Munson
       }
     end
 
-    # @example Output format
-    #
-    #   include=author,article.comments
-    #   &fields[articles]=title,body&fields[people]=name
-    #   &sort=-created,title
-    #   &filter[name_last]=Smith
-    #
-    # TODO overridable by paginator
-    def to_query
+    # @return [String] query as a query string
+    def to_query_string
       to_params.to_query
     end
 
@@ -34,7 +39,37 @@ module Munson
       str[:fields] = fields_to_query_value unless @query[:fields].empty?
       str[:include] = includes_to_query_value unless @query[:include].empty?
       str[:sort] = sort_to_query_value unless @query[:sort].empty?
+
+      str.merge!(paginator.to_params) if paginator
+
       str
+    end
+
+    # Fetches resources using {Munson::Agent}
+    #
+    # @return [Array] Array of resources
+    def fetch
+      if @agent
+        @agent.get(params: to_params)
+      else
+        raise AgentNotSet, "Agent was not set. QueryBuilder#new(agent:)"
+      end
+    end
+
+    def paging?
+      !!paginator
+    end
+
+    # Paginator proxy
+    #
+    # @return [Class,nil] paginator if set
+    def page(opts={})
+      if paging?
+        paginator.set(opts)
+        self
+      else
+        raise PaginatorNotSet, "Paginator was not set. QueryBuilder#new(paginator:)"
+      end
     end
 
     # Chainably include related resources.
@@ -145,7 +180,25 @@ module Munson
     # Since the filter query param's format isn't specified in the [spec](http://jsonapi.org/format/#fetching-filtering)
     # this implemenation uses (JSONAPI::Resource's implementation](https://github.com/cerebris/jsonapi-resources#filters)
     #
-    # TODO: This should be made pluggable, maybe via exposing a query builder class to the Munson::Agent
+    # To override, implement your own CustomQueryBuilder inheriting from {Munson::QueryBuilder}
+    # {Munson::Agent} takes a QueryBuilder class to use. This method could be overriden in your custom class
+    #
+    # @example Custom Query Builder
+    #   class MyBuilder < Munson::QueryBuilder
+    #     def filter_to_query_value
+    #       # ... your fancier logic
+    #     end
+    #   end
+    #
+    #   class Article
+    #     def self.munson
+    #       return @munson if @munson
+    #       @munson = Munson::Agent.new(
+    #         query_builder: MyBuilder
+    #         path: 'products'
+    #       )
+    #     end
+    #   end
     #
     def filter_to_query_value
       @query[:filter].reduce({}) do |acc, hash_arg|

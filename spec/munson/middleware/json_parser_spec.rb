@@ -25,7 +25,7 @@ describe Munson::Middleware::JsonParser, type: :response do
       env = faraday_env(document)
       body = middleware.call(env).env.body
 
-      expect(body).to match JSON.parse(document)
+      expect(body).to match JSON.parse(document, symbolize_names: true)
     end
 
     it 'stores the raw response' do

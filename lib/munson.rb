@@ -12,6 +12,7 @@ require "munson/version"
 require "munson/middleware/encode_json_api"
 require "munson/middleware/json_parser"
 
+require 'munson/paginator'
 require 'munson/query_builder'
 require 'munson/connection'
 require 'munson/agent'

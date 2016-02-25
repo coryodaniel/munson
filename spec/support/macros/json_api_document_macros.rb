@@ -21,7 +21,7 @@ module Munson
             ).to_return({
               body: response_body(document_name),
               headers: {'Content-Type'=>'application/vnd.api+json'}
-            })          
+            })
         end
       end
     end
