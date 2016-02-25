@@ -15,4 +15,13 @@ describe Munson do
       expect(Munson.default_connection.faraday.url_prefix.to_s).to eq "http://example.com/"
     end
   end
+
+  describe '.register_type' do
+    it 'registers a JSON Spec resource type' do
+      class Blog; end;
+      Munson.register_type("blogs", Blog)
+
+      expect(Munson.lookup_type("blogs")).to be Blog
+    end
+  end
 end

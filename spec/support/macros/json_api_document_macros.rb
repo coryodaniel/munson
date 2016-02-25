@@ -6,6 +6,14 @@ module Munson
           File.open("spec/support/responses/#{name}.json").read
         end
 
+        def response_json(name)
+          JSON.parse response_body(name), symbolize_names: true
+        end
+
+        def response_data(name)
+          response_json(name)[:data]
+        end
+
         def request_body(name)
           File.open("spec/support/requests/#{name}.json").read
         end

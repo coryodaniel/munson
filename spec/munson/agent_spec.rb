@@ -3,73 +3,28 @@ require 'spec_helper'
 describe Munson::Agent do
   before{ Munson.configure url: 'http://api.example.com' }
 
-  describe "resource processing middleware" do
-    context 'when no processing middleware is set' do
-      it 'returns the JSON parsed response' do
-        spawn_agent("Article")
-        stub_json_get("http://api.example.com/articles/1", :article_1)
-        response = Article.munson.find(1)
-        expect(response).to have_data(:article_1)
-      end
-    end
-
-    context 'data processor' do
-      it '' do
-        spawn_agent("Article")
-        class Article
-          def initialize(*)
-          end
-        end
-
-        class ArticleWrapper < Faraday::Middleware
-          def call(env)
-            @app.call(env).on_complete do |response_env|
-              response_env[:resources] = response_env.body[:data].map do |article|
-                Article.new(article[:attributes])
-              end
-            end
-          end
-        end
-
-        Munson.configure url: 'http://api.example.com' do |c|
-          c.use ArticleWrapper
-        end
-
-        stub_json_get("http://api.example.com/articles?include=author", :articles_with_author)
-
-        query    = Article.munson.includes('author').to_params
-        resources = Article.munson.get(params: query).env[:resources]
-
-        expect(resources.first).to be_a(Article)
-      end
-    end
+  describe '#response_mapper' do
+    pending 'setting a custom response mapper'
+    pending 'build custom response mapper for Munson::Model to handle relations'
   end
 
   pending '#post'
   pending '#delete'
   pending '#put'
 
-  pending "setting :route_format"
+  pending "setting :route_format" #when converting types to paths
+
+  # Should this setting be responsible for just formatting data to be sent, or
+  # should it be responsible for casting responses' keys
   pending "setting :json_key_format"
 
   describe '#find' do
     it 'returns the parsed response' do
       spawn_agent("Article")
       stub_json_get("http://api.example.com/articles/1", :article_1)
+
       response = Article.munson.find(1)
-      expect(response).to have_data(:article_1)
-    end
-
-    context 'when passing an array of IDs' do
-      it 'returns the parsed response' do
-        spawn_agent("Article")
-        stub_json_get("http://api.example.com/articles/1", :article_1)
-        stub_json_get("http://api.example.com/articles/2", :article_2)
-
-        response = Article.munson.find(1,2)
-        expect(response.first).to have_data(:article_1)
-        expect(response.last).to have_data(:article_2)
-      end
+      expect(response).to eq response_data(:article_1)
     end
   end
 

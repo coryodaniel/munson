@@ -15,6 +15,7 @@ RSpec.configure do |c|
 
   c.before(:each){ @spawned_models = [] }
   c.after :each do
+    Munson.flush_types!
     @spawned_models.each do |model|
       Object.instance_eval { remove_const model } if Object.const_defined?(model)
     end

@@ -9,7 +9,7 @@ describe Munson::Resource do
       spawn_model 'Article'
 
       resources = Article.find(1)
-      expect(resources).to have_data(:article_1)
+      expect(resources).to be_an(Article)
     end
   end
 
@@ -73,13 +73,13 @@ describe Munson::Resource do
   describe '.path' do
     it 'defaults to the class name' do
       spawn_model 'Pickle'
-      expect(Pickle.munson.path).to eql('pickles')
+      expect(Pickle.munson.type).to eql('pickles')
     end
 
     it 'sets the JSON API type' do
       spawn_model 'Quux'
-      expect{ Quux.munson.path= :qeex }.
-        to change{ Quux.munson.path }.
+      expect{ Quux.munson.type = :qeex }.
+        to change{ Quux.munson.type }.
         from('quuxes').to(:qeex)
     end
   end

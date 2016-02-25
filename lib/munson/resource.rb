@@ -9,7 +9,8 @@ module Munson
         @munson
       end
 
-      self.munson.path = name.demodulize.tableize
+      self.munson.type = name.demodulize.tableize
+      Munson.register_type(self.munson.type, self)
     end
 
     class_methods do

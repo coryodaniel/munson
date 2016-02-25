@@ -13,7 +13,7 @@ module Munson
             end
 
             munson.connection #=> Default Connection
-            munson.path = klass.demodulize.tableize
+            munson.type = klass.demodulize.tableize
           end
         end
 
@@ -32,6 +32,11 @@ module Munson
               submodel = const_set(submodel, new_class)
 
               submodel.send(:include, munson_type) if munson_type
+              submodel.class_eval do
+                def initialize(*args)
+                  @args = args
+                end
+              end
               submodel.class_eval(&block) if block_given?
             end
 
@@ -40,6 +45,11 @@ module Munson
             Object.instance_eval { remove_const klass } if Object.const_defined?(klass)
             Object.const_set(klass, Class.new)
             Object.const_get(klass).send(:include, munson_type) if munson_type
+            Object.const_get(klass).class_eval do
+              def initialize(*args)
+                @args = args
+              end
+            end
             Object.const_get(klass).class_eval(&block) if block_given?
 
             @spawned_models << klass.to_sym

@@ -5,7 +5,7 @@ module Munson
 
     attr_writer :connection
 
-    attr_accessor :path
+    attr_accessor :type
     attr_accessor :query_builder
 
     attr_reader :paginator
@@ -16,16 +16,16 @@ module Munson
     # @param [Hash] opts={} describe opts={}
     # @option opts [Munson::Connection] :connection to use
     # @option opts [#to_s, Munson::Paginator] :paginator to use on query builder
-    # @option opts [Class] :query_builder provide a custom query builder, defautls to {Munson::QueryBuilder}
-    # @option opts [#to_s] :path to use. It will be added to the base path set in the Faraday::Connection
+    # @option opts [Class] :query_builder provide a custom query builder, defaults to {Munson::QueryBuilder}
+    # @option opts [#to_s] :type JSON Spec type. Type will be added to the base path set in the Faraday::Connection
     def initialize(opts={})
       @connection    = opts[:connection]
-      @path          = opts[:path]
+      @type          = opts[:type]
 
       @query_builder = opts[:query_builder].is_a?(Class) ?
         opts[:query_builder] : Munson::QueryBuilder
 
-      self.paginator = opts[:paginator]
+      self.paginator     = opts[:paginator]
       @paginator_options = opts[:paginator_options]
     end
 
@@ -60,13 +60,10 @@ module Munson
       Munson.default_connection
     end
 
-    def find(*ids, headers: nil, params: nil)
-      responses = ids.uniq.map do |id|
-        path = [self.path, id].join('/')
-        get(path: path, headers: headers, params: params)
-      end
-
-      ids.length > 1 ? responses : responses.first
+    def find(id, headers: nil, params: nil)
+      path = [type, id].join('/')
+      response = get(path: path, headers: headers, params: params)
+      ResponseMapper.new(response).resource
     end
 
     # JSON API Spec GET request
@@ -77,7 +74,7 @@ module Munson
     # @return [Faraday::Response]
     def get(params: nil, path: nil, headers: nil)
       connection.get(
-        path: (path || self.path),
+        path: (path || type),
         params: params,
         headers: headers
       )
@@ -92,7 +89,7 @@ module Munson
     # @return [Faraday::Response]
     def post(body: {}, path: nil, headers: nil, http_method: :post)
       connection.post(
-        path: (path || self.path),
+        path: (path || type),
         body: body,
         headers: headers,
         http_method: http_method

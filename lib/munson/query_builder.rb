@@ -50,7 +50,9 @@ module Munson
     # @return [Array] Array of resources
     def fetch
       if @agent
-        @agent.get(params: to_params)
+        response = @agent.get(params: to_params)
+        resources = ResponseMapper.new(response).resources
+        Collection.new(resources)
       else
         raise AgentNotSet, "Agent was not set. QueryBuilder#new(agent:)"
       end

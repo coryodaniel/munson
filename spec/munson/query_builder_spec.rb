@@ -13,13 +13,14 @@ describe Munson::QueryBuilder do
   end
 
   describe '#fetch' do
-    it 'fetches the resources' do
-      agent = double('Munson::Agent')
-      query_builder = Munson::QueryBuilder.new(agent: agent)
-      query_builder.includes("user")
+    it 'returns a collection' do
+      Munson.configure url: 'http://api.example.com'
+      spawn_agent("Article")
+      Munson.register_type("articles", Article)
+      stub_json_get("http://api.example.com/articles?include=author", :articles_with_author)
 
-      expect(agent).to receive(:get).with(params: query_builder.to_params)
-      query_builder.fetch
+      query_builder = Article.munson.includes('author')
+      expect(query_builder.fetch).to be_a Munson::Collection
     end
   end
 

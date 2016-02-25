@@ -29,7 +29,7 @@ module Munson
         if @max_size && num > @max_size
           @size = @max_size
         else
-          @max_size = num
+          @size = num
         end
       end
 
