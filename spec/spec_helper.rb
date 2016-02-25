@@ -9,7 +9,7 @@ require 'support/macros/json_api_document_macros'
 require 'support/macros/model_macros'
 require 'support/matchers/have_data'
 
-WebMock.disable_net_connect!
+WebMock.disable_net_connect!(:allow => "codeclimate.com")
 
 RSpec.configure do |c|
   c.include Munson::RSpec::Macros::JsonApiDocumentMacros
