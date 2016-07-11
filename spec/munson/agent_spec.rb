@@ -20,7 +20,7 @@ describe Munson::Agent do
 
   describe '#find' do
     it 'returns the parsed response' do
-      spawn_agent("Article")
+      spawn_agent("Article", type: :articles)
       stub_json_get("http://api.example.com/articles/1", :article_1)
 
       response = Article.munson.find(1)
@@ -30,7 +30,7 @@ describe Munson::Agent do
 
   describe '#get' do
     it 'returns the parsed response' do
-      spawn_agent("Article")
+      spawn_agent("Article", type: :articles)
       stub_json_get("http://api.example.com/articles", :articles)
 
       response = Article.munson.get
@@ -39,7 +39,7 @@ describe Munson::Agent do
 
     context 'when using a query' do
       it 'returns the parsed response' do
-        spawn_agent("Article")
+        spawn_agent("Article", type: :articles)
         stub_json_get("http://api.example.com/articles?include=author", :articles_with_author)
 
         query    = Article.munson.includes('author').to_params

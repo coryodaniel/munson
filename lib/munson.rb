@@ -1,9 +1,5 @@
 require 'json'
-
-require 'active_support/concern'
-require "active_support/inflector"
-require "active_support/core_ext/hash"
-
+require 'cgi'
 require 'faraday'
 require 'faraday_middleware'
 
@@ -22,6 +18,8 @@ require 'munson/resource'
 
 module Munson
   @registered_types = {}
+  @registered_paginators = {}
+
   class << self
     # Configure the default connection.
     #
@@ -48,18 +46,26 @@ module Munson
     # @example Mapping a type
     #   Munson.register_type("addresses", Address)
     #
-    # @param [#to_s] type JSON Spec type
+    # @param [#to_sym] type JSON Spec type
     # @param [Class] klass to map to
     def register_type(type, klass)
-      @registered_types[type] = klass
+      @registered_types[type.to_sym] = klass
+    end
+
+    def register_paginator(name, klass)
+      @registered_paginators[name.to_sym] = klass
+    end
+
+    def lookup_paginator(name)
+      @registered_paginators[name.to_sym]
     end
 
     # Lookup a class by JSON Spec type name
     #
-    # @param [#to_s] type JSON Spec type
+    # @param [#to_sym] type JSON Spec type
     # @return [Class] domain model
     def lookup_type(type)
-      @registered_types[type]
+      @registered_types[type.to_sym]
     end
 
     # @private

@@ -9,7 +9,7 @@ describe Munson::ResponseMapper do
     describe 'when the type is registered' do
       context 'when getting a single resource' do
         it 'returns a "model"' do
-          spawn_agent("Article")
+          spawn_agent("Article", type: :articles)
           Munson.register_type("articles", Article)
           stub_json_get("http://api.example.com/articles/1", :article_1)
 
@@ -20,7 +20,7 @@ describe Munson::ResponseMapper do
       end
 
       it 'returns a collection of models' do
-        spawn_agent("Article")
+        spawn_agent("Article", type: :articles)
         Munson.register_type("articles", Article)
         stub_json_get("http://api.example.com/articles", :articles)
 
@@ -34,7 +34,7 @@ describe Munson::ResponseMapper do
     context 'when the type is not registered' do
       context 'when getting a single resource' do
         it 'returns a hash' do
-          spawn_agent("Article")
+          spawn_agent("Article", type: :articles)
           stub_json_get("http://api.example.com/articles/1", :article_1)
 
           response = Article.munson.get path: 'articles/1'
@@ -44,7 +44,7 @@ describe Munson::ResponseMapper do
       end
 
       it 'returns a hashes' do
-        spawn_agent("Article")
+        spawn_agent("Article", type: :articles)
         stub_json_get("http://api.example.com/articles", :articles)
 
         response = Article.munson.get

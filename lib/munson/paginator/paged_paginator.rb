@@ -16,7 +16,7 @@ module Munson
           page: {
             size: @size || @default_size || 10,
             number: @number
-          }.compact
+          }.select { |_, value| !value.nil? }
         }
       end
 
@@ -43,3 +43,5 @@ module Munson
     end
   end
 end
+
+Munson.register_paginator(:paged, Munson::Paginator::PagedPaginator)

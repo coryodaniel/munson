@@ -16,7 +16,7 @@ module Munson
           page: {
             limit: @limit || @default_limit || 10,
             offset: @offset
-          }.compact
+          }.select { |_, value| !value.nil? }
         }
       end
 
@@ -42,3 +42,4 @@ module Munson
     end
   end
 end
+Munson.register_paginator(:offset, Munson::Paginator::OffsetPaginator)

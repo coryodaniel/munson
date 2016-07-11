@@ -1,19 +1,21 @@
 module Munson
   module Resource
-    extend ActiveSupport::Concern
+    def self.included(base)
+      base.extend ClassMethods
+    end
 
-    included do
-      def self.munson
+    module ClassMethods
+      def munson
         return @munson if @munson
         @munson = Munson::Agent.new
         @munson
       end
+      
+      def register_munson_type(name)
+        Munson.register_type(name, self)
+        self.munson.type = name
+      end
 
-      self.munson.type = name.demodulize.tableize
-      Munson.register_type(self.munson.type, self)
-    end
-
-    class_methods do
       [:includes, :sort, :filter, :fields, :fetch, :find, :page].each do |method|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{method}(*args)

@@ -15,7 +15,7 @@ describe Munson::QueryBuilder do
   describe '#fetch' do
     it 'returns a collection' do
       Munson.configure url: 'http://api.example.com'
-      spawn_agent("Article")
+      spawn_agent("Article", type: :articles)
       Munson.register_type("articles", Article)
       stub_json_get("http://api.example.com/articles?include=author", :articles_with_author)
 
@@ -176,6 +176,16 @@ describe Munson::QueryBuilder do
 
       expect(query_builder.query[:fields]).
         to include(users: %w(first_name last_name), address: :zip_code)
+    end
+
+    context 'passing an array when the type is set' do
+      pending 'sets the key based on the type' do
+        query_builder = Munson::QueryBuilder.new type: 'users'
+        query_builder.fields(:first_name, :last_name, address: :zip_code)
+
+        expect(query_builder.query[:fields]).
+          to include(users: %w(first_name last_name), address: :zip_code)
+      end
     end
 
     context 'multiple calls' do

@@ -24,7 +24,7 @@ module Munson
               headers: {
                 'Accept'=>'application/vnd.api+json',
                 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-                'User-Agent'=>'Faraday v0.9.2'
+                'User-Agent'=>"Munson v#{Munson::VERSION}"
               }
             ).to_return({
               body: response_body(document_name),

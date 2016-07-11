@@ -59,7 +59,7 @@ class Product
     @munson = Munson::Agent.new(
       connection: Munson.default_connection, # || Munson::Connection.new(...)
       paginator: :offset,
-      path: 'products'
+      type: 'products'
     )
   end
 end
@@ -161,7 +161,7 @@ class Product
     return @munson if @munson
     @munson = Munson::Agent.new(
       paginator: :offset,
-      path: 'products'
+      type: 'products'
     )
   end
 end
@@ -180,7 +180,7 @@ class Product
     return @munson if @munson
     @munson = Munson::Agent.new(
       paginator: :paged,
-      path: 'products'
+      type: 'products'
     )
   end
 end
@@ -225,17 +225,34 @@ when using the bare Munson::Agent, Munson::Resource will pass the JSON Spec attr
 ```ruby
 class Product
   include Munson::Resource
+  register_munson_type :products
 end
 
 # Munson method is there, should you be looking for it.
 Product.munson #=> Munson::Agent
 ```
 
-Changing the type name:
+**Setting the type**
+
+This will cause Munson to return a hash instead of a class instance (Product).
+
 ```ruby
 class Product
   include Munson::Resource
-  munson.type = "things"
+  munson.type = :products
+end
+```
+
+There are two ways to set the JSON API type when using a Munson::Resource
+
+**Registering the type**
+
+This will cause munson to return your model's datatype. Munson will register this in its type map dictionary and use the class to initialize a model
+
+```ruby
+class Product
+  include Munson::Resource
+  register_munson_type :products
 end
 ```
 
@@ -355,3 +372,55 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/coryodaniel/munson.
+
+### Munson::Model
+WIP see [usage](#usage)
+
+Finding related resources could set instance methods that mix/override behavior of the class level agent...
+
+/articles/1
+Article.find(1) uses Article.munson
+
+/articles/1/author
+article = Article.find(1) uses Article.munson
+article.author uses article.munson as a new connection that sets the base uri to /articles/1
+
+## Usage
+```ruby
+address = Address.new
+address.state = "FL"
+address.save
+address.state = "CA"
+address.save
+# Mind mutex adding method accessors on... dangerous, see her, consider storing them in an @attributes hash...
+user = User.find(1)
+address = user.addresses.build
+address.save #posts on the relation
+
+address = Address.new({...})
+address = Address.new
+address.assign_attributes
+address.update_attributes
+address.dirty?
+
+Address.update(1, {}) #update without loading
+Address.destroy(1) #Destroy without loading
+
+address = Address.find(300)
+address.destroy
+
+Address.find(10)
+Address.filter(zip_code: 90210).find(10)
+Address.filter(zip_code: 90210).all
+Address.filter(zip_code: 90210).fetch
+Address.includes(:user, 'user.purchases').filter(active: true).all
+Address.includes(:user, 'user.purchases').find(10)
+Address.sort(city: :asc)
+Address.sort(city: :desc)
+Address.fields(:street1, :street2, {user: :name})
+Address.fields(:street1, :street2).fields(user: :name)
+addresses = Address.fields(:street1, :street2).fields(user: :name)
+addresses.first.shipped_products.filter(min_total: 300.00)
+
+Custom collection/member methods?
+```

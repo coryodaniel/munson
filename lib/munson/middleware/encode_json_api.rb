@@ -4,8 +4,10 @@ module Munson
       CONTENT_TYPE = 'Content-Type'.freeze
       ACCEPT       = 'Accept'.freeze
       MIME_TYPE    = 'application/vnd.api+json'.freeze
+      USER_AGENT   = 'User-Agent'
 
       def call(env)
+        env[:request_headers][USER_AGENT] = "Munson v#{Munson::VERSION}"
         env[:request_headers][ACCEPT] ||= MIME_TYPE
         match_content_type(env) do |data|
           env[:body] = encode data

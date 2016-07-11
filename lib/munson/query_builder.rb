@@ -26,11 +26,11 @@ module Munson
 
     # @return [String] query as a query string
     def to_query_string
-      to_params.to_query
+      Faraday::Utils.build_nested_query(to_params)
     end
 
     def to_s
-      to_query
+      to_query_string
     end
 
     def to_params

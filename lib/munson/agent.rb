@@ -31,7 +31,7 @@ module Munson
 
     def paginator=(pager)
       if pager.is_a?(Symbol)
-        @paginator = "Munson::Paginator::#{pager.to_s.classify}Paginator".constantize
+        @paginator = Munson.lookup_paginator(pager)
       else
         @paginator = pager
       end
