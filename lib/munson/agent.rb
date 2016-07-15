@@ -6,6 +6,7 @@ module Munson
     attr_writer :connection
 
     attr_accessor :type
+    attr_writer :default_path
     attr_accessor :query_builder
 
     attr_reader :paginator
@@ -17,16 +18,21 @@ module Munson
     # @option opts [Munson::Connection] :connection to use
     # @option opts [#to_s, Munson::Paginator] :paginator to use on query builder
     # @option opts [Class] :query_builder provide a custom query builder, defaults to {Munson::QueryBuilder}
-    # @option opts [#to_s] :type JSON Spec type. Type will be added to the base path set in the Faraday::Connection
+    # @option opts [#to_s] :type JSON Spec type. JSON API type. Used for response mapping and defaults the path
+    # @option opts [#to_s] :path to JSON API Resource. Path will be added to the base path set in the Faraday::Connection
     def initialize(opts={})
       @connection    = opts[:connection]
       @type          = opts[:type]
-
+      @default_path  = opts[:path]
       @query_builder = opts[:query_builder].is_a?(Class) ?
         opts[:query_builder] : Munson::QueryBuilder
 
       self.paginator     = opts[:paginator]
       @paginator_options = opts[:paginator_options]
+    end
+
+    def default_path
+      @default_path || "/#{type}"
     end
 
     def paginator=(pager)
@@ -61,7 +67,7 @@ module Munson
     end
 
     def find(id, headers: nil, params: nil)
-      path = [type, id].join('/')
+      path = [default_path, id].join('/')
       response = get(path: path, headers: headers, params: params)
       ResponseMapper.new(response).resource
     end
@@ -69,12 +75,12 @@ module Munson
     # JSON API Spec GET request
     #
     # @option [Hash,nil] params: nil query params
-    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#type
+    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
     # @return [Faraday::Response]
     def get(params: nil, path: nil, headers: nil)
       connection.get(
-        path: (path || type),
+        path: (path || default_path),
         params: params,
         headers: headers
       )
@@ -83,13 +89,13 @@ module Munson
     # JSON API Spec POST request
     #
     # @option [Hash,nil] body: {} query params
-    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#type
+    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
     # @option [Type] http_method: :post describe http_method: :post
     # @return [Faraday::Response]
     def post(body: {}, path: nil, headers: nil, http_method: :post)
       connection.post(
-        path: (path || type),
+        path: (path || default_path),
         body: body,
         headers: headers,
         http_method: http_method
@@ -99,7 +105,7 @@ module Munson
     # JSON API Spec PATCH request
     #
     # @option [Hash,nil] body: nil query params
-    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#type
+    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
     # @return [Faraday::Response]
     def patch(body: nil, path: nil, headers: nil)
@@ -109,7 +115,7 @@ module Munson
     # JSON API Spec PUT request
     #
     # @option [Hash,nil] body: nil query params
-    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#type
+    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
     # @return [Faraday::Response]
     def put(body: nil, path: nil, headers: nil)
@@ -119,7 +125,7 @@ module Munson
     # JSON API Spec DELETE request
     #
     # @option [Hash,nil] body: nil query params
-    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#type
+    # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
     # @return [Faraday::Response]
     def delete(body: nil, path: nil, headers: nil)

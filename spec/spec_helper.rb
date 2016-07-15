@@ -23,3 +23,42 @@ RSpec.configure do |c|
     end
   end
 end
+
+# Maybe scratch all the model generation for something a little more simple...
+# class Person
+#   def self.munson
+#     return @munson if @munson
+#     @munson = Munson::Agent.new
+#     @munson
+#   end
+#   munson.type = :people
+# end
+#
+# class Article
+#   def self.munson
+#     return @munson if @munson
+#     @munson = Munson::Agent.new
+#     @munson
+#   end
+#   munson.type = :articles
+#
+#   def self.resource_initializer(data, included: included, errors: errors)
+#     json = {
+#       data: data,
+#       included: included
+#     }
+#     json[:errors] if errors
+#
+#     new(json)
+#   end
+#
+#   attr_reader :json
+#   def initialize(json)
+#     @json = json
+#   end
+# end
+#
+
+# class Post < Munson::Resource
+#   register_munson_type :articles
+# end

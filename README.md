@@ -222,28 +222,6 @@ It delegates a set of methods so that they dont have to be accessed through the 
 It also will alter the response objects coming from #fetch and #find. Instead of returning a json hash like
 when using the bare Munson::Agent, Munson::Resource will pass the JSON Spec attributes and the ID as a hash into your class's initializer.
 
-```ruby
-class Product
-  include Munson::Resource
-  register_munson_type :products
-end
-
-# Munson method is there, should you be looking for it.
-Product.munson #=> Munson::Agent
-```
-
-**Setting the type**
-
-This will cause Munson to return a hash instead of a class instance (Product).
-
-```ruby
-class Product
-  include Munson::Resource
-  munson.type = :products
-end
-```
-
-There are two ways to set the JSON API type when using a Munson::Resource
 
 **Registering the type**
 
@@ -254,6 +232,11 @@ class Product
   include Munson::Resource
   register_munson_type :products
 end
+```
+
+# Munson method is there, should you be looking for it.
+```
+Product.munson #=> Munson::Agent
 ```
 
 #### Filtering

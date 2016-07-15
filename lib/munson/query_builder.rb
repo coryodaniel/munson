@@ -3,9 +3,6 @@ module Munson
     attr_reader :query
     attr_reader :paginator
     attr_reader :agent
-    class UnsupportedSortDirectionError < StandardError; end;
-    class PaginatorNotSet < StandardError; end;
-    class AgentNotSet < StandardError; end;
 
     # Description of method
     #
@@ -51,10 +48,9 @@ module Munson
     def fetch
       if @agent
         response = @agent.get(params: to_params)
-        resources = ResponseMapper.new(response).resources
-        Collection.new(resources)
+        ResponseMapper.new(response).resources
       else
-        raise AgentNotSet, "Agent was not set. QueryBuilder#new(agent:)"
+        raise Munson::AgentNotSet, "Agent was not set. QueryBuilder#new(agent:)"
       end
     end
 
@@ -70,7 +66,7 @@ module Munson
         paginator.set(opts)
         self
       else
-        raise PaginatorNotSet, "Paginator was not set. QueryBuilder#new(paginator:)"
+        raise Munson::PaginatorNotSet, "Paginator was not set. QueryBuilder#new(paginator:)"
       end
     end
 
@@ -217,7 +213,7 @@ module Munson
       hashes.each do |hash|
         hash.each do |k,v|
           if !%i(desc asc).include?(v.to_sym)
-            raise UnsupportedSortDirectionError, "Unknown direction '#{v}'. Use :asc or :desc"
+            raise Munson::UnsupportedSortDirectionError, "Unknown direction '#{v}'. Use :asc or :desc"
           end
         end
       end

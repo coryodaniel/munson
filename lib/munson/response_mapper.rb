@@ -1,53 +1,41 @@
 module Munson
   class ResponseMapper
-    class UnsupportedDatatype < StandardError;end;
-
     def initialize(response)
-      @data     = response.body[:data]
-      @includes = response.body[:include]
+      @body = response.body
+    end
+
+    def data
+      @body[:data]
     end
 
     def resources
-      if data_is_collection?
-        map_data(@data)
+      if data.is_a?(Array)
+        Collection.new(data.map{ |datum| build_resource(datum) })
       else
-        raise StandardError, "Called #resources, but response was a single resource. Use ResponseMapper#resource"
+        raise Munson::Error, "Called #resources, but response was a single resource. Use ResponseMapper#resource"
       end
     end
 
     def resource
-      if data_is_resource?
-        map_data(@data)
+      if data.is_a?(Hash)
+        build_resource(data)
       else
-        raise StandardError, "Called #resource, but response was a collection of resources. Use ResponseMapper#resources"
+        raise Munson::Error, "Called #resource, but response was a collection of resources. Use ResponseMapper#resources"
       end
     end
 
     private
 
-    def data_is_resource?
-      @data.is_a?(Hash)
-    end
-
-    def data_is_collection?
-      @data.is_a?(Array)
-    end
-
-    def map_data(data)
-      if data_is_collection?
-        @data.map{ |datum| map_resource(datum) }
-      elsif data_is_resource?
-        map_resource(@data)
+    def build_resource(resource)
+      klass = Munson.lookup_type(resource[:type])
+      
+      if klass && klass.respond_to?(:resource_initializer)
+        klass.resource_initializer(resource, included: @body[:included], errors: @body[:errors])
       else
-        raise UnsupportedDatatype, "No mapping rule for #{data.class}"
-      end
-    end
-
-    def map_resource(resource)
-      if klass = Munson.lookup_type(resource[:type])
-        klass.new(resource[:attributes].merge(id: resource[:id]))
-      else
-        resource
+        json = { data: resource }
+        json[:included] = @body[:included] if @body[:included]
+        json[:errors] = @body[:errors] if @body[:errors]
+        json
       end
     end
   end

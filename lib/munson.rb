@@ -17,6 +17,11 @@ require 'munson/agent'
 require 'munson/resource'
 
 module Munson
+  class Error < StandardError; end;
+  class UnsupportedSortDirectionError < Munson::Error; end;
+  class PaginatorNotSet < Munson::Error; end;
+  class AgentNotSet < Munson::Error; end;
+
   @registered_types = {}
   @registered_paginators = {}
 

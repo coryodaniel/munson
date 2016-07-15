@@ -3,20 +3,41 @@ require 'spec_helper'
 describe Munson::Agent do
   before{ Munson.configure url: 'http://api.example.com' }
 
-  describe '#response_mapper' do
-    pending 'setting a custom response mapper'
-    pending 'build custom response mapper for Munson::Model to handle relations'
-  end
-
   pending '#post'
   pending '#delete'
   pending '#put'
-
-  pending "setting :route_format" #when converting types to paths
+  pending '#patch'
 
   # Should this setting be responsible for just formatting data to be sent, or
   # should it be responsible for casting responses' keys
   pending "setting :json_key_format"
+  pending "setting :route_format" #when converting types to paths
+
+  describe '#default_path' do
+    it 'defaults to the Agent#type' do
+      spawn_agent("Article", type: :articles)
+      expect(Article.munson.default_path).to eq '/articles'
+    end
+  end
+
+  describe '#default_path=' do
+    it 'sets the default path' do
+      spawn_agent("Article", type: :articles)
+
+      expect{ Article.munson.default_path = '/user/articles' }.
+        to change(Article.munson, :default_path).
+        from('/articles').to('/user/articles')
+    end
+  end
+
+  describe '#initialize' do
+    context 'when specifying the :path' do
+      it 'sets the default_path' do
+        agent = Munson::Agent.new(path: '/boo')
+        expect(agent.default_path).to eq '/boo'
+      end
+    end
+  end
 
   describe '#find' do
     it 'returns the parsed response' do
@@ -24,7 +45,7 @@ describe Munson::Agent do
       stub_json_get("http://api.example.com/articles/1", :article_1)
 
       response = Article.munson.find(1)
-      expect(response).to eq response_data(:article_1)
+      expect(response).to eq response_json(:article_1)
     end
   end
 
