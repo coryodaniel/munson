@@ -1,10 +1,14 @@
 module Munson
   module Middleware
-    class JsonParser < Faraday::Middleware
+    class JsonParser < Faraday::Response::Middleware
+      def initialize(app, key_formatter = nil)
+        super(app)
+        @key_formatter = key_formatter
+      end
+
       def call(request_env)
-        @app.call(request_env).on_complete do |response_env|
-          response_env[:raw_body] = response_env[:body]
-          response_env[:body] = parse(response_env[:body])
+        @app.call(request_env).on_complete do |request_env|
+          request_env[:body] = parse(request_env[:body])
         end
       end
 
@@ -12,7 +16,8 @@ module Munson
 
       def parse(body)
         unless body.strip.empty?
-          ::JSON.parse(body, symbolize_names: true)
+          json = ::JSON.parse(body, symbolize_names: true)
+          @key_formatter ? @key_formatter.internalize(json) : json
         else
           {}
         end
@@ -20,3 +25,4 @@ module Munson
     end
   end
 end
+Faraday::Response.register_middleware :"Munson::Middleware::JsonParser" => Munson::Middleware::JsonParser

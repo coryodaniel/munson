@@ -2,6 +2,15 @@ module Munson
   module RSpec
     module Macros
       module JsonApiDocumentMacros
+        def create_payload(type, attribs, id: nil, relationships: nil)
+          object = {
+            type: type,
+            attributes: attribs
+          }
+          object[:id] = id if id
+          { data: object }
+        end
+
         def response_body(name)
           File.open("spec/support/responses/#{name}.json").read
         end

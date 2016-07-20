@@ -1,8 +1,7 @@
 require 'spec_helper'
 
 describe Munson::Middleware::JsonParser, type: :response do
-  let(:document){ response_body(:articles_with_author) }
-
+  let(:document){ response_body(:albums_include_artist) }
 
   let(:middleware) {
     described_class.new(lambda {|env|
@@ -26,13 +25,6 @@ describe Munson::Middleware::JsonParser, type: :response do
       body = middleware.call(env).env.body
 
       expect(body).to match JSON.parse(document, symbolize_names: true)
-    end
-
-    it 'stores the raw response' do
-      env = faraday_env(document)
-      raw_body = middleware.call(env).env[:raw_body]
-
-      expect(raw_body).to eq document
     end
   end
 

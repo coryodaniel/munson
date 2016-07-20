@@ -1,13 +1,11 @@
 require 'spec_helper'
 
 describe Munson do
-  pending 'munson-rails http://api.rubyonrails.org/classes/ActiveModel/Dirty.html'
-  pending 'Munson::Model in munson-rails'
-  pending 'relationships/included - with active record models'
-
   it 'has a version number' do
     expect(Munson::VERSION).not_to be nil
   end
+
+  pending '.factory' #.factory?
 
   describe '.configure' do
     it "sets the default connection" do

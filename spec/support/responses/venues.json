@@ -1,0 +1,12 @@
+{
+  "data": [{
+    "type": "venues",
+    "id": "1",
+    "attributes": {
+      "title": "Janis Landing"
+    },
+    "links": {
+      "self": "http://api.example.com/venues/1"
+    }
+  }]
+}

@@ -1,0 +1,76 @@
+{
+  "data": {
+    "type": "artists",
+    "id": "9",
+    "attributes": {
+      "name": "The Decemberists",
+      "twitter": "@TheDecemberists"
+    },
+    "links": {
+      "self": "http://example.com/artist/9"
+    },
+    "relationships":{
+      "members": {
+        "data": [
+          {"type":"members","id":"1"},
+          {"type":"members","id":"2"},
+          {"type":"members","id":"3"},
+          {"type":"members","id":"4"},
+          {"type":"members","id":"5"}    
+        ]
+      }
+    }
+  },
+  "included":[
+    {
+      "type": "members",
+      "id": "1",
+      "attributes": {
+        "name": "Colin Meloy"
+      },
+      "links": {
+        "self": "http://api.example.com/members/1"
+      }
+    },
+    {
+      "type": "members",
+      "id": "2",
+      "attributes": {
+        "name": "Chris Funk"
+      },
+      "links": {
+        "self": "http://api.example.com/members/2"
+      }
+    },
+    {
+      "type": "members",
+      "id": "3",
+      "attributes": {
+        "name": "Jenny Conlee"
+      },
+      "links": {
+        "self": "http://api.example.com/members/3"
+      }
+    },
+    {
+      "type": "members",
+      "id": "4",
+      "attributes": {
+        "name": "Nate Query"
+      },
+      "links": {
+        "self": "http://api.example.com/members/4"
+      }
+    },
+    {
+      "type": "members",
+      "id": "5",
+      "attributes": {
+        "name": "John Moen"
+      },
+      "links": {
+        "self": "http://api.example.com/members/5"
+      }
+    }
+  ]
+}

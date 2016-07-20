@@ -1,0 +1,13 @@
+{
+  "data": {
+    "type": "artists",
+    "id": "9",
+    "attributes": {
+      "name": "The Decemberists",
+      "twitter": "@TheDecemberists"
+    },
+    "links": {
+      "self": "http://example.com/artist/9"
+    }
+  }
+}

@@ -1,121 +1,192 @@
 require 'spec_helper'
 
+class FooResource < Munson::Resource
+  self.type = :foos
+end
+
 describe Munson::Resource do
-  before{ Munson.configure url: 'http://api.example.com' }
+  before { FooResource.instance_variable_set("@schema",{}) }
 
-  describe '.register_munson_type' do
+  describe '.attribute' do
+    it "adds the attribute to the Resource's schema" do
+      expect { FooResource.attribute :name, :to_s }.
+        to change{FooResource.schema.empty?}.
+        from(true).to(false)
+    end
+
+    context 'when initializing an object' do
+      context 'when the default is set' do
+        it 'sets the default for a given attribute' do
+          FooResource.attribute :color, :to_s, default: "red"
+          resource = FooResource.new
+          expect(resource.color).to eq "red"
+        end
+      end
+
+      context 'when the default is set via a proc' do
+        it 'sets the default for a given attribute' do
+          FooResource.attribute :color, :to_s, default: -> { "red" }
+          resource = FooResource.new
+          expect(resource.color).to eq "red"
+        end
+      end
+    end
+  end
+
+  describe "#save" do
+    it "sends the attributes to the Munson::Document" do
+      artist = Artist.find(9)
+      artist.name = "Elton John"
+      artist.twitter = "@TheJohn"
+
+      expect(artist.document).to receive(:save).with(name: 'Elton John', twitter: '@TheJohn')
+      artist.save
+    end
+  end
+
+  describe '#persisted?' do
+    context 'when the document has an ID' do
+      it 'is persisted' do
+        artist = Artist.find(9)
+        expect(artist).to be_persisted
+      end
+    end
+
+    context 'when the document does not have an ID' do
+      it 'is not persisted' do
+        artist = Artist.new
+        expect(artist).to_not be_persisted
+      end
+    end
+  end
+
+  describe '.self.type = ' do
+    before { Artist.type = :artists }
+    after { Artist.type = :artists }
     it 'registers the type w/ Munson' do
-      spawn_resource 'Article', type: :articles
-
-      expect{ Article.register_munson_type :posts }.
-        to change{ Munson.lookup_type(:posts) }.from(nil).to(Article)
+      expect{ Artist.type =  "pickles" }.
+        to change{ Munson.lookup_type(:pickles) }.from(nil).to(Artist)
     end
 
     it 'sets the agents type' do
-      spawn_resource 'Article', type: :articles
-
-      expect{ Article.register_munson_type :posts }.
-        to change{ Article.munson.type }.from(:articles).to(:posts)
+      expect{ Artist.type = :bands }.
+        to change{ Artist.munson.type }.from(:artists).to(:bands)
     end
   end
 
+  describe 'relationships' do
+    context 'when the type is a Munson::Resource' do
+      it "returns a Munson::Collection of Munson::Resource" do
+        artist = Artist.include('members').find(9)
 
+        expect(artist.members).to be_a(Munson::Collection)
+        expect(artist.members.first).to be_a(Member)
+        expect(artist.members.first.name).to eq "Colin Meloy"
+      end
+    end
 
-  describe 'query builder + find' do
-    # Article.includes(:user).fields(user: [:id]).find(article_id)
-    # Should querybuilder know about find?
-    # Maybe create a Request object that encapsulates the query builder and exposes find as an alias for its "call" method...
+    context 'when the type is registered, but not a Munson::Resource' do
+      it "returns a Munson::Collection of objects" do
+        artist = Artist.include('albums').find(9)
+
+        expect(artist.albums).to be_a(Munson::Collection)
+        expect(artist.albums.first).to be_a(Album)
+        expect(artist.albums.first.title).to eq "The Crane Wife"
+      end
+    end
+
+    context 'when the type is not registered' do
+      it "returns a Munson::Document" do
+        artist = Artist.include(:albums,:record_label).find(9)
+
+        expect(artist.record_label).to be_a(Munson::Document)
+        expect(artist.record_label[:name]).to eq "Capitol Records"
+      end
+    end
   end
 
-  describe '.relationship' do
-    describe 'identity mapper?'
-    # adds accessor methods, if a class type is provided, maps to that type class, else puts a hash in that key
-    # has_many :posts #=> {}
-    # has_many :posts, resource: Post #=> Post instance
-    pending 'with munson resources'
-  end
-
-  describe '#find' do
+  describe '.find' do
     it 'returns the resource' do
-      stub_json_get("http://api.example.com/articles/1", :article_1)
-      spawn_resource 'Article', type: :articles
-
-      resource = Article.find(1)
-      expect(resource).to be_an(Article)
+      artist = Artist.find(9)
+      expect(artist).to be_an(Artist)
     end
   end
 
   describe '#id' do
     it 'returns the resource ID' do
-      stub_json_get("http://api.example.com/articles/1", :article_1)
-      spawn_resource 'Article', type: :articles
-
-      resource = Article.find(1)
-      expect(resource.id).to eq "1"
+      artist = Artist.find(9)
+      expect(artist.id).to eq "9"
     end
   end
 
-  describe '#includes' do
-    it 'returns a QueryBuilder' do
-      spawn_resource 'Article', type: :articles
+  describe '.fields' do
+    it "returns a Query" do
+      query = Artist.fields(artists: [:name, :twitter], albums: [:name])
+      fields = query.to_params[:fields]
 
-      query = Article.includes(:author)
-      expect(query).to be_a Munson::QueryBuilder
+      expect(fields).to eq(artists: "name,twitter", albums: "name")
+    end
+
+    context "given an array and a hash" do
+      it "automatically wraps the array elements with the type name" do
+        query = Artist.fields(:name, :twitter, albums: [:name])
+        fields = query.to_params[:fields]
+
+        expect(fields).to eq(artists: "name,twitter", albums: "name")
+      end
+    end
+
+    context "given an array" do
+      it "automatically wraps the array elements with the type name" do
+        query = Artist.fields(:name, :twitter)
+        fields = query.to_params[:fields]
+
+        expect(fields).to eq(artists: "name,twitter")
+      end
     end
   end
 
-  describe '#page' do
-    it 'returns a QueryBuilder' do
-      spawn_resource 'Article', type: :articles
-      Article.munson.paginator = :offset
-
-      query = Article.page(limit: 100)
-      expect(query).to be_a Munson::QueryBuilder
+  describe '.includes' do
+    it 'returns a Query' do
+      query = Artist.include(:albums)
+      expect(query).to be_a Munson::Query
     end
   end
 
-  describe '#filter' do
-    it 'returns a QueryBuilder' do
-      spawn_resource 'Article', type: :articles
-
-      query = Article.filter(category: 'kittens')
-      expect(query).to be_a Munson::QueryBuilder
+  describe '.page' do
+    it 'returns a Query' do
+      query = Artist.page(limit: 100)
+      expect(query).to be_a Munson::Query
     end
   end
 
-  describe '#sort' do
-    it 'returns a QueryBuilder' do
-      spawn_resource 'Article', type: :articles
-
-      query = Article.sort(:title)
-      expect(query).to be_a Munson::QueryBuilder
+  describe '.filter' do
+    it 'returns a Query' do
+      query = Artist.filter(category: 'kittens')
+      expect(query).to be_a Munson::Query
     end
   end
 
-  describe '.munson.connection=' do
-    it 'overrides to the default connection' do
-      spawn_resource 'Bar', type: :bars
-      new_connection = Munson::Connection.new url: 'https://example.com/api'
-      expect{ Bar.munson.connection = new_connection }.
-        to change{ Bar.munson.connection }.
-        from(Munson.default_connection).
-        to(new_connection)
-    end
-
-    it "does not change other connections' path" do
-      spawn_resource 'Foo', type: :foos
-      spawn_resource 'Qux', type: :qeex
-      new_connection = Munson::Connection.new url: 'https://example.com/api'
-      expect{ Foo.munson.connection = new_connection }.
-        to_not change{ Qux.munson.connection }.
-        from(Munson.default_connection)
+  describe '.sort' do
+    it 'returns a Query' do
+      query = Artist.sort(:name)
+      expect(query).to be_a Munson::Query
     end
   end
 
-  describe '.munson.connection' do
-    it 'defaults to the default connection' do
-      spawn_resource 'Foo', type: :foos
-      expect(Foo.munson.connection).to be Munson.default_connection
-    end
+  describe '.update' do
+    pending "Resource.update(id,{})"
+  end
+
+  describe '.destroy' do
+    pending "Resource.destroy(id)"
+  end
+
+  describe '#destroy' do
+    pending "Resource#destroy"
+  end
+
+  describe '.all' do
+    pending "Resource.all{ |article| paging...}"
   end
 end

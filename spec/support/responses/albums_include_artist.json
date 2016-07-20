@@ -1,0 +1,80 @@
+{
+  "data": [{
+    "type": "albums",
+    "id": "1",
+    "attributes": {
+      "title": "The Crane Wife"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/1"
+    },
+    "relationships": {
+      "artist": {
+        "data": { "type": "artists", "id": "9" },
+        "links": {
+          "self": "http://api.example.com/albums/1/relationships/artist",
+          "related": "http://api.example.com/albums/1/artist"
+        }
+      }
+    }
+  },{
+    "type": "albums",
+    "id": "2",
+    "attributes": {
+      "title": "Castaways and Cutouts"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/2"
+    },
+    "relationships": {
+      "artist": {
+        "data": { "type": "artists", "id": "9" },
+        "links": {
+          "self": "http://api.example.com/albums/2/relationships/artist",
+          "related": "http://api.example.com/albums/2/artist"
+        }
+      }
+    }
+  },
+  {
+    "type": "albums",
+    "id": "3",
+    "attributes": {
+      "title": "The Mysterious Production of Eggs"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/3"
+    },
+    "relationships": {
+      "artist": {
+        "data": { "type": "artists", "id": "10" },
+        "links": {
+          "self": "http://api.example.com/albums/3/relationships/artist",
+          "related": "http://api.example.com/albums/3/artist"
+        }
+      }
+    }
+  }],
+  "included": [{
+    "type": "artists",
+    "id": "9",
+    "attributes": {
+      "name": "The Decemberists",
+      "twitter": "@TheDecemberists"
+    },
+    "links": {
+      "self": "http://example.com/artist/9"
+    }
+  },
+  {
+    "type": "artists",
+    "id": "10",
+    "attributes": {
+      "name": "Andrew Bird",
+      "twitter": "@andrewbird"
+    },
+    "links": {
+      "self": "http://example.com/artist/10"
+    }
+  }]
+}

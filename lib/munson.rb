@@ -2,30 +2,46 @@ require 'json'
 require 'cgi'
 require 'faraday'
 require 'faraday_middleware'
+require 'bigdecimal'
 
 require "munson/version"
-
+require 'munson/agent'
+require 'munson/attribute'
+require "munson/client"
+require 'munson/collection'
+require 'munson/connection'
+require 'munson/document'
+require 'munson/key_formatter'
 require "munson/middleware/encode_json_api"
 require "munson/middleware/json_parser"
-
-require 'munson/collection'
-require 'munson/paginator'
-require 'munson/response_mapper'
-require 'munson/query_builder'
-require 'munson/connection'
-require 'munson/agent'
 require 'munson/resource'
+require 'munson/response_mapper'
+require 'munson/query'
 
 module Munson
   class Error < StandardError; end;
   class UnsupportedSortDirectionError < Munson::Error; end;
-  class PaginatorNotSet < Munson::Error; end;
-  class AgentNotSet < Munson::Error; end;
-
+  class UnrecognizedKeyFormatter < Munson::Error; end;
+  class RelationshipNotIncludedError < Munson::Error; end;
+  class RelationshipNotFound < Munson::Error; end;
+  class ClientNotSet < Munson::Error; end;
   @registered_types = {}
-  @registered_paginators = {}
 
   class << self
+    # Transforms a JSONAPI hash into a Munson::Document, Munson::Resource, or arbitrary class
+    # @param [Munson::Document,Hash] document to transform
+    # @return [Munson::Document,~Munson::Resource]
+    def factory(document)
+      document = Munson::Document.new(document) if document.is_a?(Hash)
+      klass    = Munson.lookup_type(document.type)
+
+      if klass && klass.respond_to?(:munson_initializer)
+        klass.munson_initializer(document)
+      else
+        document
+      end
+    end
+
     # Configure the default connection.
     #
     # @param [Hash] opts {Munson::Connection} configuration options
@@ -57,25 +73,12 @@ module Munson
       @registered_types[type.to_sym] = klass
     end
 
-    def register_paginator(name, klass)
-      @registered_paginators[name.to_sym] = klass
-    end
-
-    def lookup_paginator(name)
-      @registered_paginators[name.to_sym]
-    end
-
     # Lookup a class by JSON Spec type name
     #
     # @param [#to_sym] type JSON Spec type
     # @return [Class] domain model
     def lookup_type(type)
       @registered_types[type.to_sym]
-    end
-
-    # @private
-    def flush_types!
-      @registered_types = {}
     end
   end
 end

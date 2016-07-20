@@ -1,59 +1,74 @@
-
 require 'spec_helper'
 
 describe Munson::ResponseMapper do
-  before{ Munson.configure url: 'http://api.example.com' }
+  describe '#jsonapi_resources' do
+    it 'exposes all of the JSONAPI resources in the response' do
+      json = response_json(:albums_include_artist)
+      mapper = Munson::ResponseMapper.new(json)
 
-  describe '#initialize' do
-    describe 'when the type is registered' do
-      context 'when getting a single resource' do
-        it 'returns a "model"' do
-          spawn_agent("Article", type: :articles)
-          Munson.register_type("articles", Article)
-          stub_json_get("http://api.example.com/articles/1", :article_1)
+      types = mapper.jsonapi_resources.map{ |r| r[:type] }.uniq
+      expect(types).to eq %w(albums artists)
+    end
+  end
 
-          response = Article.munson.get path: 'articles/1'
-          mapper = Munson::ResponseMapper.new(response)
-          expect(mapper.resource).to be_an(Article)
-        end
-      end
+  context 'when processing a collection' do
+    it 'sets top-level jsonapi "info" on the collection' do
+      document   = Album.munson.agent.get(path: '/albums').body
+      collection = Munson::ResponseMapper.new(document).collection
+      expect(collection.jsonapi[:version]).to eq "1.0"
+    end
 
-      it 'returns a collection of models' do
-        spawn_agent("Article", type: :articles)
-        Munson.register_type("articles", Article)
-        stub_json_get("http://api.example.com/articles", :articles)
+    it 'sets top-level jsonapi "links" on the collection' do
+      document   = Album.munson.agent.get(path: '/albums').body
+      collection = Munson::ResponseMapper.new(document).collection
+      expect(collection.links[:self]).to eq "http://api.example.com/albums/"
+    end
 
-        response = Article.munson.get
-        mapper = Munson::ResponseMapper.new(response)
+    it 'sets top-level jsonapi "meta" data on the collection' do
+      document   = Album.munson.agent.get(path: '/albums').body
+      collection = Munson::ResponseMapper.new(document).collection
+      expect(collection.meta[:total_count]).to be 3
+    end
+  end
 
-        expect(mapper.resources.first).to be_an(Article)
+  describe 'when the type is registered' do
+    context 'when processing a single resource' do
+      it 'returns a "model"' do
+        response = Album.munson.agent.get path: '/albums/1'
+
+        mapper = Munson::ResponseMapper.new(response.body)
+        expect(mapper.resource).to be_an(Album)
       end
     end
 
-    context 'when the type is not registered' do
-      context 'when getting a single resource' do
-        it 'returns a hash' do
-          spawn_agent("Article", type: :articles)
-          stub_json_get("http://api.example.com/articles/1", :article_1)
+    it 'returns a collection of models' do
+      response = Album.munson.agent.get
+      mapper = Munson::ResponseMapper.new(response.body)
+      expect(mapper.collection.first).to be_an(Album)
+    end
+  end
 
-          response = Article.munson.get path: 'articles/1'
-          resource = Munson::ResponseMapper.new(response).resource
+  context 'when the type is not registered' do
+    context 'when processing a single resource' do
+      it 'returns a Munson::Document' do
+        response = Venue.munson.agent.get path: '/venues/1'
+        resource = Munson::ResponseMapper.new(response.body).resource
 
-          expect(resource).to match(response_json(:article_1))
-        end
+        expect(resource).to be_a(Munson::Document)
+        expect(resource.id). to eq "1"
+        expect(resource.type).to eq :venues
       end
+    end
 
-      it 'returns a collection hashes' do
-        spawn_agent("Article", type: :articles)
-        stub_json_get("http://api.example.com/articles?include=author", :articles_with_author)
+    it 'returns Munson::Collection<Munson::Document>' do
+      response = Venue.munson.agent.get
+      mapper = Munson::ResponseMapper.new(response.body)
+      first_resource = mapper.collection.first
 
-        query    = Article.munson.includes('author').to_params
-        response = Article.munson.get(params: query)
-
-        resources = Munson::ResponseMapper.new(response).resources
-        expect(resources).to be_kind_of(Munson::Collection)
-        expect(resources.first).to include(:data, :included)
-      end
+      expect(mapper.collection).to be_a(Munson::Collection)
+      expect(first_resource).to be_a(Munson::Document)
+      expect(first_resource.id).to eq "1"
+      expect(first_resource.type).to eq :venues
     end
   end
 end

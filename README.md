@@ -2,7 +2,7 @@
 
 [![Code Climate](https://codeclimate.com/github/coryodaniel/munson/badges/gpa.svg)](https://codeclimate.com/github/coryodaniel/munson)
 [![Test Coverage](https://codeclimate.com/github/coryodaniel/munson/badges/coverage.svg)](https://codeclimate.com/github/coryodaniel/munson/coverage)
-![Build Status](https://travis-ci.org/coryodaniel/munson.svg?branch=master)
+![Build Status](https://travis-ci.org/stacksocial/munson.svg?branch=master)
 
 A JSON API Spec client for Ruby
 
@@ -58,7 +58,6 @@ class Product
     return @munson if @munson
     @munson = Munson::Agent.new(
       connection: Munson.default_connection, # || Munson::Connection.new(...)
-      paginator: :offset,
       type: 'products'
     )
   end
@@ -106,9 +105,9 @@ query.fetch #=> Some lovely data
 #### Including (Side loading related resources)
 
 ```ruby
-query = Product.munson.includes(:manufacturer)
+query = Product.munson.include(:manufacturer)
 # its chainable
-query.includes(:vendor)
+query.include(:vendor)
 
 query.to_params
 #=> {:include=>"manufacturer,vendor"}
@@ -121,7 +120,7 @@ query.fetch #=> Some lovely data
 ```ruby
 query = Product.munson.fields(products: [:name, :price])
 # its chainable
-query.includes(:manufacturer).fields(manufacturer: [:name])
+query.include(:manufacturer).fields(manufacturer: [:name])
 
 query.to_params
 #=> {:fields=>{:products=>"name,price", :manufacturer=>"name"}, :include=>"manufacturer"}
@@ -152,65 +151,42 @@ Product.munson.find(1)
 
 #### Paginating
 
-A paged and offset paginator are included with Munson.
+Munson is agnostic about your pagination. Pass whatever you want to the #page method
 
-Using the ```offset``` paginator
 ```ruby
+
 class Product
   def self.munson
     return @munson if @munson
     @munson = Munson::Agent.new(
-      paginator: :offset,
       type: 'products'
     )
   end
 end
 
-query = Product.munson.includes('manufacturer').page(offset: 10, limit: 25)
+query = Product.munson.include('manufacturer').page(offset: 10, limit: 25)
 query.to_params
 # => {:include=>"manufacturer", :page=>{:limit=>10, :offset=>10}}
 
 query.fetch #=> Some lovely data
 ```
 
-Using the ```paged``` paginator
 ```ruby
+
 class Product  
   def self.munson
     return @munson if @munson
     @munson = Munson::Agent.new(
-      paginator: :paged,
       type: 'products'
     )
   end
 end
 
-query = Product.munson.includes('manufacturer').page(page: 10, size: 25)
+query = Product.munson.include('manufacturer').page(page: 10, size: 25)
 query.to_params
 # => {:include=>"manufacturer", :page=>{:page=>10, :size=>10}}
 
 query.fetch #=> Some lovely data
-```
-
-##### Custom paginators
-Since the JSON API Spec does not dictate [how to paginate](http://jsonapi.org/format/#fetching-pagination), Munson has been designed to make adding custom paginators pretty easy.
-
-```ruby
-class CustomPaginator
-  # @param [Hash] Hash of options like max/default page size
-  def initialize(opts={})
-  end
-
-  # @param [Hash] Hash to set the 'limit' and 'offset' to be returned later by #to_params
-  def set(params={})
-  end
-
-  # @return [Hash] Params to be merged into query builder.
-  def to_params
-    { page: {} }
-  end
-end
-
 ```
 
 ### Munson::Resource
@@ -230,7 +206,7 @@ This will cause munson to return your model's datatype. Munson will register thi
 ```ruby
 class Product
   include Munson::Resource
-  register_munson_type :products
+  self.type =  :products
 end
 ```
 
@@ -268,9 +244,9 @@ query.fetch #=> Munson::Collection<Product,Product>
 #### Including (Side loading related resources)
 
 ```ruby
-query = Product.includes(:manufacturer)
+query = Product.include(:manufacturer)
 # its chainable
-query.includes(:vendor)
+query.include(:vendor)
 
 query.to_params
 #=> {:include=>"manufacturer,vendor"}
@@ -283,7 +259,7 @@ query.fetch #=> Munson::Collection<Product,Product>
 ```ruby
 query = Product.fields(products: [:name, :price])
 # its chainable
-query.includes(:manufacturer).fields(manufacturer: [:name])
+query.include(:manufacturer).fields(manufacturer: [:name])
 
 query.to_params
 #=> {:fields=>{:products=>"name,price", :manufacturer=>"name"}, :include=>"manufacturer"}
@@ -314,32 +290,26 @@ Product.find(1) #=> product
 
 #### Paginating
 
-A paged and offset paginator are included with Munson.
-
-Using the ```offset``` paginator
 ```ruby
+
 class Product
   include Munson::Resource
-  munson.paginator = :offset
-  munson.paginator_options = {default: 10, max: 100}
 end
 
-query = Product.includes('manufacturer').page(offset: 10, limit: 25)
+query = Product.include('manufacturer').page(offset: 10, limit: 25)
 query.to_params
 # => {:include=>"manufacturer", :page=>{:limit=>10, :offset=>10}}
 
 query.fetch #=> Munson::Collection<Product,Product>
 ```
 
-Using the ```paged``` paginator
 ```ruby
+
 class Product
   include Munson::Resource
-  munson.paginator = :paged
-  munson.paginator_options = {default: 10, max: 100}
 end
 
-query = Product.includes('manufacturer').page(page: 10, size: 25)
+query = Product.include('manufacturer').page(page: 10, size: 25)
 query.to_params
 # => {:include=>"manufacturer", :page=>{:page=>10, :size=>10}}
 
@@ -355,55 +325,3 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/coryodaniel/munson.
-
-### Munson::Model
-WIP see [usage](#usage)
-
-Finding related resources could set instance methods that mix/override behavior of the class level agent...
-
-/articles/1
-Article.find(1) uses Article.munson
-
-/articles/1/author
-article = Article.find(1) uses Article.munson
-article.author uses article.munson as a new connection that sets the base uri to /articles/1
-
-## Usage
-```ruby
-address = Address.new
-address.state = "FL"
-address.save
-address.state = "CA"
-address.save
-# Mind mutex adding method accessors on... dangerous, see her, consider storing them in an @attributes hash...
-user = User.find(1)
-address = user.addresses.build
-address.save #posts on the relation
-
-address = Address.new({...})
-address = Address.new
-address.assign_attributes
-address.update_attributes
-address.dirty?
-
-Address.update(1, {}) #update without loading
-Address.destroy(1) #Destroy without loading
-
-address = Address.find(300)
-address.destroy
-
-Address.find(10)
-Address.filter(zip_code: 90210).find(10)
-Address.filter(zip_code: 90210).all
-Address.filter(zip_code: 90210).fetch
-Address.includes(:user, 'user.purchases').filter(active: true).all
-Address.includes(:user, 'user.purchases').find(10)
-Address.sort(city: :asc)
-Address.sort(city: :desc)
-Address.fields(:street1, :street2, {user: :name})
-Address.fields(:street1, :street2).fields(user: :name)
-addresses = Address.fields(:street1, :street2).fields(user: :name)
-addresses.first.shipped_products.filter(min_total: 300.00)
-
-Custom collection/member methods?
-```
