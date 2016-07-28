@@ -56,10 +56,9 @@ module Munson
     # @option [Hash] headers: nil HTTP Headers
     # @return [Faraday::Response]
     def get(path: nil, params: nil, headers: nil)
-      externalized_params = externalize_keys(params)
       faraday.get do |request|
         request.headers.merge!(headers) if headers
-        request.url path.to_s, externalized_params
+        request.url path.to_s, externalize_keys(params)
       end
     end
 

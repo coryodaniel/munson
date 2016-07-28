@@ -5,7 +5,34 @@ class FooResource < Munson::Resource
 end
 
 describe Munson::Resource do
-  before { FooResource.instance_variable_set("@schema",{}) }
+  before {
+    FooResource.instance_variable_set("@schema",{})
+  }
+
+  describe '.format_id' do
+    it "defaults to :integer" do
+      expect(FooResource.format_id("3")).to eq 3
+    end
+
+    # key_type :string
+    # key_type ->(key){ key.to_s }
+
+    context "when key_type is :string" do
+      after{ FooResource.key_type :integer }
+      it "returns a string" do
+        FooResource.key_type(:string)
+        expect(FooResource.format_id("3")).to eq "3"
+      end
+    end
+
+    context "when key_type is a Proc" do
+      after{ FooResource.key_type :integer }
+      it "applies the proc" do
+        FooResource.key_type ->(val){ "#{val}-extra-cool" }
+        expect(FooResource.format_id("3")).to eq "3-extra-cool"
+      end
+    end
+  end
 
   describe '.attribute' do
     it "adds the attribute to the Resource's schema" do
@@ -33,15 +60,75 @@ describe Munson::Resource do
     end
   end
 
-  describe "#save" do
-    it "sends the attributes to the Munson::Document" do
-      stub_api_request(:artist_9)
-      artist = Artist.find(9)
-      artist.name = "Elton John"
-      artist.twitter = "@TheJohn"
+  describe '#save' do
+    context 'when the save fails' do
+      pending 'returns false'
+    end
 
-      expect(artist.document).to receive(:save).with(name: 'Elton John', twitter: '@TheJohn')
-      artist.save
+    context 'when it has an ID' do
+      it "PATCHes the resource" do
+        stub_api_request(:artist_9)
+
+        artist = Artist.find(9)
+        artist.name = "Elton John"
+        artist.twitter = "@TheJohn"
+
+        json = {
+          data: {
+            type: :artists,
+            id: "9",
+            attributes: {
+              name: 'Elton John',
+              twitter: '@TheJohn'
+            }
+          }
+        }
+
+        stub = stub_request(:patch, "http://api.example.com/artists/9").
+          with(body: JSON.dump(json)).
+          to_return(status: 200, body: JSON.dump(json))
+
+        expect(artist.save).to be true
+        expect(stub).to have_been_requested
+      end
+    end
+
+    context 'when it does not have an ID' do
+      it "POSTs the resource" do
+        artist = Artist.new({
+          name: "Elton John",
+          twitter: "@TheJohn"
+        })
+
+        post_body = {
+          data: {
+            type: :artists,
+            attributes: {
+              name: 'Elton John',
+              twitter: '@TheJohn'
+            }
+          }
+        }
+
+        response_body = {
+          data: {
+            type: :artists,
+            id: '300',
+            attributes: {
+              name: 'Elton John',
+              twitter: '@TheJohn'
+            }
+          }
+        }
+
+        stub = stub_request(:post, "http://api.example.com/artists").
+          with(body: JSON.dump(post_body)).
+          to_return(status: 200, body: JSON.dump(response_body))
+
+        expect(artist.save).to be true
+        expect(stub).to have_been_requested
+        expect(artist.id).to eq 300
+      end
     end
   end
 
@@ -122,7 +209,7 @@ describe Munson::Resource do
     it 'returns the resource ID' do
       stub_api_request(:artist_9)
       artist = Artist.find(9)
-      expect(artist.id).to eq "9"
+      expect(artist.id).to eq 9
     end
   end
 

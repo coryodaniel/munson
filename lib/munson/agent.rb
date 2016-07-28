@@ -22,13 +22,24 @@ module Munson
     # @option [Hash,nil] params: nil query params
     # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
+    # @option [String,Fixnum] id: nil ID to append to @path (provided in #new) when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def get(params: nil, path: nil, headers: nil)
+    def get(params: nil, path: nil, headers: nil, id: nil)
       connection.get(
-        path: (path || @path),
+        path: negotiate_path(path, id),
         params: params,
         headers: headers
       )
+    end
+
+    def negotiate_path(path = nil, id = nil)
+      if path
+        path
+      elsif id
+        [@path, id].join('/')
+      else
+        @path
+      end
     end
 
     # JSON API Spec POST request
@@ -37,10 +48,11 @@ module Munson
     # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
     # @option [Type] http_method: :post describe http_method: :post
+    # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def post(body: {}, path: nil, headers: nil, http_method: :post)
+    def post(body: {}, path: nil, headers: nil, http_method: :post, id: nil)
       connection.post(
-        path: (path || @path),
+        path: negotiate_path(path, id),
         body: body,
         headers: headers,
         http_method: http_method
@@ -52,9 +64,10 @@ module Munson
     # @option [Hash,nil] body: nil query params
     # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
+    # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def patch(body: nil, path: nil, headers: nil)
-      post(body, path: path, headers: headers, http_method: :patch)
+    def patch(body: nil, path: nil, headers: nil, id: nil)
+      post(body: body, path: path, headers: headers, http_method: :patch, id: id)
     end
 
     # JSON API Spec PUT request
@@ -62,9 +75,10 @@ module Munson
     # @option [Hash,nil] body: nil query params
     # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
+    # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def put(body: nil, path: nil, headers: nil)
-      post(body, path: path, headers: headers, http_method: :put)
+    def put(body: nil, path: nil, headers: nil, id: nil)
+      post(body: body, path: path, headers: headers, http_method: :put, id: id)
     end
 
     # JSON API Spec DELETE request
@@ -72,9 +86,10 @@ module Munson
     # @option [Hash,nil] body: nil query params
     # @option [String] path: nil path to GET, defaults to Faraday::Connection url + Agent#default_path
     # @option [Hash] headers: nil HTTP Headers
+    # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def delete(body: nil, path: nil, headers: nil)
-      post(body, path: path, headers: headers, http_method: :delete)
+    def delete(body: nil, path: nil, headers: nil, id: nil)
+      post(body: body, path: path, headers: headers, http_method: :delete, id: id)
     end
   end
 end

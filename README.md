@@ -1,9 +1,5 @@
 ## TODOS
-* [ ] IdValueFormatter v attributes(?)... id type (String, Fixnum)
 * Collection#next (queries for next page, if pagination present)
-* [ ] ResponseMapper and HTTP != 2xx?... ErrorMapper in Munson::Query#fetch?k
-  * Error response Error class (original document, iterator for each error)
-  * Resource errors (post, etc)
 * [ ] Related Documents/Resources taking advantage of underlying resource[links]
   * [ ] Resource should provide relationship information to the underlying document ?
 * [ ] Query#headers #forward on find/fetch
@@ -22,6 +18,7 @@
   * [ ] Custom Query Builder
 * [ ] Update Yardoc
 * [ ] Post to JSONAPI.org client site...
+* [ ] Change tracking? So PATCH only sends changes... dirty tracking... :(
 * [ ] munson/rails - magic up all the things
   * [ ] auto set type based on pluralization (self.type = :foos)
   * [ ] http://api.rubyonrails.org/classes/ActiveModel/Dirty.html ?

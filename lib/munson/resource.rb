@@ -1,8 +1,6 @@
 class Munson::Resource
-  extend Forwardable
   attr_reader :document
   attr_reader :attributes
-  def_delegators :document, :id
 
   # @example Given a Munson::Document
   #   document = Munson::Document.new(jsonapi_hash)
@@ -27,6 +25,11 @@ class Munson::Resource
     initialize_attrs
   end
 
+  def id
+    return nil if document.id.nil?
+    @id ||= self.class.format_id(document.id)
+  end
+
   def initialize_attrs
     @attributes = @document.attributes.clone
     self.class.schema.each do |name, attribute|
@@ -40,7 +43,23 @@ class Munson::Resource
   end
 
   def save
-    document.save(serialized_attributes)
+    document.attributes = serialized_attributes
+    response = if persisted?
+      agent.patch(id: id.to_s, body: document.to_h)
+    else
+      agent.post(body: document.to_h)
+    end
+
+    @document = Munson::Document.new(response.body)
+    response.success?
+  end
+
+  def errors
+    document.errors
+  end
+
+  def agent
+    self.class.munson.agent
   end
 
   def serialized_attributes
@@ -57,6 +76,21 @@ class Munson::Resource
   end
 
   class << self
+    def key_type(type)
+      @key_type = type
+    end
+
+    def format_id(id)
+      case @key_type
+      when :integer, nil
+        id.to_i
+      when :string
+        id.to_s
+      when Proc
+        @key_type.call(id)
+      end
+    end
+
     def schema
       @schema ||= {}
     end

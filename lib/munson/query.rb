@@ -27,8 +27,7 @@ module Munson
 
     def find(id)
       if @client
-        path     = [@client.type, id].join('/')
-        response = @client.agent.get(path: path, params: to_params)
+        response = @client.agent.get(id: id, params: to_params)
         ResponseMapper.new(response.body).resource
       else
         raise Munson::ClientNotSet, "Client was not set. Query#new(client)"

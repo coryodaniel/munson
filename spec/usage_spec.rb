@@ -40,11 +40,30 @@ RSpec.describe 'Usage' do
     author = articles.first.author
     author.first_name = "Tomas"
     author.last_name = "Blunderbee"
+    author.twitter = "blunderz"
     expect(author.first_name).to eq 'Tomas'
+
+    json = {
+      data: {
+        type: :people,
+        id: author.id,
+        attributes: {
+          "first-name" => "Tomas",
+          "last-name" => "Blunderbee",
+          "twitter" => "blunderz"
+        }
+      }
+    }
+
+    stub = stub_request(:patch, "http://api.example.com/people/#{author.id}").
+      with(body: JSON.dump(json)).
+      to_return(status: 200, body: JSON.dump(json))
+
     expect(author.save).to be true
   end
 
   it "can load unloaded relationships" do
+    pending
     stub_api_request(:articles_include_author_comments)
 
     articles = Article.include(:author, :comments).fetch
@@ -54,6 +73,7 @@ RSpec.describe 'Usage' do
   end
 
   it 'can force a reload of a relationship' do
+    pending
     stub_api_request(:articles_include_author_comments)
 
     articles = Article.include(:author, :comments).fetch

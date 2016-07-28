@@ -1,12 +1,20 @@
 module Munson
   class Document
-    attr_reader :id
+    attr_accessor :id
     attr_reader :type
 
     def initialize(jsonapi_document)
       @id   = jsonapi_document[:data][:id]
       @type = jsonapi_document[:data][:type].to_sym
       @jsonapi_document = jsonapi_document
+    end
+
+    # @return [Hash] hash for persisting this JSON API Resource via POST/PATCH/PUT
+    def to_h
+      payload = { data: { type: @type } }
+      payload[:data][:id] = id if id
+      payload[:data][:attributes] = attributes
+      payload
     end
 
     def data
@@ -21,13 +29,20 @@ module Munson
       data[:attributes] || {}
     end
 
-    def save(attrs)
+    def attributes=(attrs)
       data[:attributes] = attrs
-      true
+    end
+
+    def url
+      links[:self]
     end
 
     def [](key)
       attributes[key]
+    end
+
+    def errors
+      data[:errors] || []
     end
 
     # Raw relationship hashes

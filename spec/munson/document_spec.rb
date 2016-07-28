@@ -1,34 +1,6 @@
 require 'spec_helper'
 
 RSpec.describe Munson::Document do
-  pending '#destroy'
-  
-  describe '#save' do
-    pending 'when it has an ID'
-    pending 'when it does not have an ID'
-    # it "calls #put on the document" do
-    #   pending
-    #   # artist = Artist.find(9)
-    #   # artist.name = "Elton John"
-    #   # artist.twitter = "@TheJohn"
-    #   #
-    #   # stub = stub_request(:post, "http://api.example.com/artists/9").
-    #   #   with(body: {
-    #   #     data: {
-    #   #       type: :artists, id: 9,
-    #   #       attributes: {
-    #   #         name: 'Elton John',
-    #   #         twitter: '@TheJohn'
-    #   #       }
-    #   #     }
-    #   #   })
-    #   #
-    #   # expect(artist.save).to be true
-    #   # expect(stub).to have_been_requested
-    # end
-  end
-
-
   describe '#relationship' do
     context 'when the relationship does not exist' do
       it "raises a Munson::RelationshipNotFound error" do
