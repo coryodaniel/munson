@@ -18,6 +18,7 @@ describe Munson::Connection do
   describe '#key_format=' do
     context 'when :dasherize' do
       it "underscores response body keys" do
+        stub_api_request(:articles_include_author_comments)
         connection = Munson::Connection.new(
           response_key_format: :dasherize,
           url: 'http://api.example.com/articles?include=author,comments'
@@ -55,6 +56,7 @@ describe Munson::Connection do
 
     context 'when :camelize' do
       it "underscores response body keys" do
+        stub_api_request(:articles_include_author)
         connection = Munson::Connection.new(
           response_key_format: :camelize,
           url: 'http://api.example.com/articles?include=author'

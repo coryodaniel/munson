@@ -6,6 +6,8 @@ describe Munson::Query do
 
   describe '#find' do
     it 'returns a mapped resource' do
+      stub_api_request(:album_1_include_artist)
+
       client = Munson::Client.new(type: :albums)
       query  = Munson::Query.new(client)
       album  = query.include(:artist).find(1)
@@ -16,6 +18,8 @@ describe Munson::Query do
 
   describe '#fetch' do
     it 'returns a Munson::Collection' do
+      stub_api_request(:albums_include_artist)
+
       client = Munson::Client.new(type: :albums)
       query   = Munson::Query.new(client)
       albums  = query.include(:artist).fetch

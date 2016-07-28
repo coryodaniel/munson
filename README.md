@@ -1,3 +1,36 @@
+## TODOS
+* [ ] IdValueFormatter v attributes(?)... id type (String, Fixnum)
+* Collection#next (queries for next page, if pagination present)
+* [ ] ResponseMapper and HTTP != 2xx?... ErrorMapper in Munson::Query#fetch?k
+  * Error response Error class (original document, iterator for each error)
+  * Resource errors (post, etc)
+* [ ] Related Documents/Resources taking advantage of underlying resource[links]
+  * [ ] Resource should provide relationship information to the underlying document ?
+* [ ] Query#headers #forward on find/fetch
+* [ ] consider enumerable protocol on a query
+* [ ] Handle null/empty responses...
+* [ ] Update README
+  * [ ] Munson::Document v Munson::Resource
+  * [ ] Munson configuration
+  * [ ] Using a resource
+  * [ ] Configuring a client
+  * [ ] Using a client
+  * [ ] Configuring a client
+  * [ ] Queries
+  * [ ] Agents
+  * [ ] Connections
+  * [ ] Custom Query Builder
+* [ ] Update Yardoc
+* [ ] Post to JSONAPI.org client site...
+* [ ] munson/rails - magic up all the things
+  * [ ] auto set type based on pluralization (self.type = :foos)
+  * [ ] http://api.rubyonrails.org/classes/ActiveModel/Dirty.html ?
+* [ ] Pluggable pagination (could it be a subclassed QueryBuilder? vs. a set of methods mixed into a query instance)
+* [ ] Query#find([...]) find multiple records
+
+
+## 0.2x README
+
 # Munson
 
 [![Code Climate](https://codeclimate.com/github/coryodaniel/munson/badges/gpa.svg)](https://codeclimate.com/github/coryodaniel/munson)

@@ -26,20 +26,6 @@ module Munson
         def request_body(name)
           File.open("spec/support/requests/#{name}.json").read
         end
-
-        def stub_json_get(url, document_name)
-          stub_request(:get, url).
-            with(
-              headers: {
-                'Accept'=>'application/vnd.api+json',
-                'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-                'User-Agent'=>"Munson v#{Munson::VERSION}"
-              }
-            ).to_return({
-              body: response_body(document_name),
-              headers: {'Content-Type'=>'application/vnd.api+json'}
-            })
-        end
       end
     end
   end

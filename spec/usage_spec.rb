@@ -2,6 +2,8 @@ require 'spec_helper'
 
 RSpec.describe 'Usage' do
   it 'initialize side loaded resources' do
+    stub_api_request(:articles_include_author_comments)
+
     articles = Article.include(:author, :comments).fetch
     author = articles.first.author
     expect(author).to be_a(Person)
@@ -14,11 +16,15 @@ RSpec.describe 'Usage' do
   end
 
   it 'knows if a resource has been persisted' do
+    stub_api_request(:articles_include_author_comments)
+
     articles = Article.include(:author, :comments).fetch
     expect(articles.first).to be_persisted
   end
 
   it 'casts attribute values from JSON' do
+    stub_api_request(:articles_include_author_comments)
+
     articles = Article.include(:author, :comments).fetch
     comment = articles.first.comments.first
     expect(comment.mentions).to eq %w(paulbunyan)
@@ -28,6 +34,8 @@ RSpec.describe 'Usage' do
   end
 
   it 'can update resources' do
+    stub_api_request(:articles_include_author_comments)
+
     articles = Article.include(:author, :comments).fetch
     author = articles.first.author
     author.first_name = "Tomas"
@@ -37,6 +45,8 @@ RSpec.describe 'Usage' do
   end
 
   it "can load unloaded relationships" do
+    stub_api_request(:articles_include_author_comments)
+
     articles = Article.include(:author, :comments).fetch
     last_comment = articles.first.comments.last
 
@@ -44,6 +54,8 @@ RSpec.describe 'Usage' do
   end
 
   it 'can force a reload of a relationship' do
+    stub_api_request(:articles_include_author_comments)
+
     articles = Article.include(:author, :comments).fetch
     article = articles.first
 
@@ -52,17 +64,21 @@ RSpec.describe 'Usage' do
 
   describe 'Artist (Munson::Resource)' do
     it 'loads other munson resources' do
+      stub_api_request(:artist_9_include_albums)
+
       artist = Artist.include(:albums).find(9)
       expect(artist).to be_a(Artist)
       expect(artist.albums.first).to be_a(Album)
     end
 
     it 'loads other registered resources' do
+      stub_api_request(:artists)
       artists = Artist.fetch
       expect(artists).to be_a(Munson::Collection)
     end
 
     it 'loads unregistered JSONAPI resources' do
+      stub_api_request(:artist_9_include_albums_record_label)
       artist = Artist.include(:albums,:record_label).find(9)
       expect(artist.record_label).to be_a(Munson::Document)
       expect(artist.record_label[:name]).to eq "Capitol Records"
@@ -71,6 +87,8 @@ RSpec.describe 'Usage' do
 
   describe 'Album (non-resource)' do
     it "initializes a Munson::Collectin of albums" do
+      stub_api_request(:albums)
+
       albums = Album.munson.fetch
       first_album = albums.first
 
@@ -80,6 +98,7 @@ RSpec.describe 'Usage' do
     end
 
     it "finds records by ID" do
+      stub_api_request(:album_1_include_artist)
       album = Album.munson.include(:artist).find(1)
       expect(album).to be_a(Album)
       expect(album.title).to eq "The Crane Wife"
@@ -88,6 +107,7 @@ RSpec.describe 'Usage' do
 
   describe 'Venues (unregistered, non-resource)' do
     it "returns Munson::Documents if the class is unregistered" do
+      stub_api_request(:venues)
       venues = Venue.munson.fetch
       expect(venues).to be_a(Munson::Collection)
       expect(venues.first).to be_a(Munson::Document)

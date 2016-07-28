@@ -13,18 +13,21 @@ describe Munson::ResponseMapper do
 
   context 'when processing a collection' do
     it 'sets top-level jsonapi "info" on the collection' do
+      stub_api_request(:albums)
       document   = Album.munson.agent.get(path: '/albums').body
       collection = Munson::ResponseMapper.new(document).collection
       expect(collection.jsonapi[:version]).to eq "1.0"
     end
 
     it 'sets top-level jsonapi "links" on the collection' do
+      stub_api_request(:albums)
       document   = Album.munson.agent.get(path: '/albums').body
       collection = Munson::ResponseMapper.new(document).collection
       expect(collection.links[:self]).to eq "http://api.example.com/albums/"
     end
 
     it 'sets top-level jsonapi "meta" data on the collection' do
+      stub_api_request(:albums)
       document   = Album.munson.agent.get(path: '/albums').body
       collection = Munson::ResponseMapper.new(document).collection
       expect(collection.meta[:total_count]).to be 3
@@ -34,6 +37,7 @@ describe Munson::ResponseMapper do
   describe 'when the type is registered' do
     context 'when processing a single resource' do
       it 'returns a "model"' do
+        stub_api_request(:album_1)
         response = Album.munson.agent.get path: '/albums/1'
 
         mapper = Munson::ResponseMapper.new(response.body)
@@ -42,6 +46,7 @@ describe Munson::ResponseMapper do
     end
 
     it 'returns a collection of models' do
+      stub_api_request(:albums)
       response = Album.munson.agent.get
       mapper = Munson::ResponseMapper.new(response.body)
       expect(mapper.collection.first).to be_an(Album)
@@ -51,6 +56,7 @@ describe Munson::ResponseMapper do
   context 'when the type is not registered' do
     context 'when processing a single resource' do
       it 'returns a Munson::Document' do
+        stub_api_request(:venue_1)
         response = Venue.munson.agent.get path: '/venues/1'
         resource = Munson::ResponseMapper.new(response.body).resource
 
@@ -61,6 +67,7 @@ describe Munson::ResponseMapper do
     end
 
     it 'returns Munson::Collection<Munson::Document>' do
+      stub_api_request(:venues)
       response = Venue.munson.agent.get
       mapper = Munson::ResponseMapper.new(response.body)
       first_resource = mapper.collection.first

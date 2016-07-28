@@ -35,6 +35,7 @@ describe Munson::Resource do
 
   describe "#save" do
     it "sends the attributes to the Munson::Document" do
+      stub_api_request(:artist_9)
       artist = Artist.find(9)
       artist.name = "Elton John"
       artist.twitter = "@TheJohn"
@@ -47,6 +48,7 @@ describe Munson::Resource do
   describe '#persisted?' do
     context 'when the document has an ID' do
       it 'is persisted' do
+        stub_api_request(:artist_9)
         artist = Artist.find(9)
         expect(artist).to be_persisted
       end
@@ -77,6 +79,7 @@ describe Munson::Resource do
   describe 'relationships' do
     context 'when the type is a Munson::Resource' do
       it "returns a Munson::Collection of Munson::Resource" do
+        stub_api_request(:artist_9_include_members)
         artist = Artist.include('members').find(9)
 
         expect(artist.members).to be_a(Munson::Collection)
@@ -87,6 +90,7 @@ describe Munson::Resource do
 
     context 'when the type is registered, but not a Munson::Resource' do
       it "returns a Munson::Collection of objects" do
+        stub_api_request(:artist_9_include_albums)
         artist = Artist.include('albums').find(9)
 
         expect(artist.albums).to be_a(Munson::Collection)
@@ -97,6 +101,7 @@ describe Munson::Resource do
 
     context 'when the type is not registered' do
       it "returns a Munson::Document" do
+        stub_api_request(:artist_9_include_albums_record_label)
         artist = Artist.include(:albums,:record_label).find(9)
 
         expect(artist.record_label).to be_a(Munson::Document)
@@ -107,6 +112,7 @@ describe Munson::Resource do
 
   describe '.find' do
     it 'returns the resource' do
+      stub_api_request(:artist_9)
       artist = Artist.find(9)
       expect(artist).to be_an(Artist)
     end
@@ -114,6 +120,7 @@ describe Munson::Resource do
 
   describe '#id' do
     it 'returns the resource ID' do
+      stub_api_request(:artist_9)
       artist = Artist.find(9)
       expect(artist.id).to eq "9"
     end
