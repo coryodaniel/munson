@@ -1,0 +1,21 @@
+{
+  "data": {
+    "type": "albums",
+    "id": "1",
+    "attributes": {
+      "title": "The Crane Wife"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/1"
+    },
+    "relationships": {
+      "artist": {
+        "data": { "type": "artists", "id": "9" },
+        "links": {
+          "self": "http://api.example.com/albums/1/relationships/artist",
+          "related": "http://api.example.com/albums/1/artist"
+        }
+      }
+    }
+  }
+}

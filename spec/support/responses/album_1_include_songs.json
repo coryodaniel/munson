@@ -1,0 +1,55 @@
+{
+  "data": {
+    "type": "albums",
+    "id": "1",
+    "attributes": {
+      "title": "The Crane Wife"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/1"
+    },
+    "relationships": {
+      "songs": {
+        "data": [
+          { "type": "songs", "id": "1" },
+          { "type": "songs", "id": "2" },
+          { "type": "songs", "id": "3" }
+        ],
+        "links": {
+          "self": "http://api.example.com/albums/1/relationships/songs",
+          "related": "http://api.example.com/albums/1/songs"
+        }
+      }
+    }
+  },
+  "included":[{
+    "type": "songs",
+    "id": "1",
+    "attributes": {
+      "name": "The Crane Wife 3"
+    },
+    "links": {
+      "self": "http://example.com/songs/1"
+    }
+  },
+  {
+    "type": "songs",
+    "id": "2",
+    "attributes": {
+      "name": "The Island: Come and See/The Landlord's Daughter/You'll Not Feel the Drowning"
+    },
+    "links": {
+      "self": "http://example.com/songs/2"
+    }
+  },
+  {
+    "type": "songs",
+    "id": "3",
+    "attributes": {
+      "name": "Yankee Bayonet (I Will Be Home Then)"
+    },
+    "links": {
+      "self": "http://example.com/songs/3"
+    }
+  }]
+}

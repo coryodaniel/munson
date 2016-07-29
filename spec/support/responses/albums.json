@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "total_count": 3
+  },
+  "jsonapi": {
+    "version": "1.0"
+  },
+  "links": {
+    "self": "http://api.example.com/albums/"
+  },
+  "data": [{
+    "type": "albums",
+    "id": "1",
+    "attributes": {
+      "title": "The Crane Wife"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/1"
+    },
+    "relationships": {
+      "artist": {
+        "links": {
+          "self": "http://api.example.com/albums/1/relationships/artist",
+          "related": "http://api.example.com/albums/1/artist"
+        }
+      }
+    }
+  },{
+    "type": "albums",
+    "id": "2",
+    "attributes": {
+      "title": "Castaways and Cutouts"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/2"
+    },
+    "relationships": {
+      "artist": {
+        "links": {
+          "self": "http://api.example.com/albums/2/relationships/artist",
+          "related": "http://api.example.com/albums/2/artist"
+        }
+      }
+    }
+  },
+  {
+    "type": "albums",
+    "id": "3",
+    "attributes": {
+      "title": "The Mysterious Production of Eggs"
+    },
+    "links": {
+      "self": "http://api.example.com/albums/3"
+    },
+    "relationships": {
+      "artist": {
+        "links": {
+          "self": "http://api.example.com/albums/3/relationships/artist",
+          "related": "http://api.example.com/albums/3/artist"
+        }
+      }
+    }
+  }]
+}

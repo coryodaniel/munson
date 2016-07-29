@@ -1,0 +1,55 @@
+{
+  "data": {
+    "type": "artists",
+    "id": "9",
+    "attributes": {
+      "name": "The Decemberists",
+      "twitter": "@TheDecemberists"
+    },
+    "links": {
+      "self": "http://example.com/artist/9"
+    },
+    "relationships":{
+      "record_label":{
+        "data":{"type":"record_labels","id":"1"}
+      },
+      "albums":{
+        "data": [
+          {"type":"albums","id":"1"},
+          {"type":"albums","id":"2"}
+        ]
+      }
+    }
+  },
+  "included":[
+    {
+      "type": "albums",
+      "id": "1",
+      "attributes": {
+        "title": "The Crane Wife"
+      },
+      "links": {
+        "self": "http://api.example.com/albums/1"
+      }
+    },{
+      "type": "albums",
+      "id": "2",
+      "attributes": {
+        "title": "Castaways and Cutouts"
+      },
+      "links": {
+        "self": "http://api.example.com/albums/2"
+      }
+    },
+    {
+      "type": "record_labels",
+      "id": "1",
+      "attributes": {
+        "name": "Capitol Records"
+      },
+      "links": {
+        "self": "http://api.example.com/record_labels/1"
+      }
+    }
+  ]
+}

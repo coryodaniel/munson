@@ -2,9 +2,9 @@
 
 [![Code Climate](https://codeclimate.com/github/coryodaniel/munson/badges/gpa.svg)](https://codeclimate.com/github/coryodaniel/munson)
 [![Test Coverage](https://codeclimate.com/github/coryodaniel/munson/badges/coverage.svg)](https://codeclimate.com/github/coryodaniel/munson/coverage)
-![Build Status](https://travis-ci.org/coryodaniel/munson.svg?branch=master)
+![Build Status](https://travis-ci.org/stacksocial/munson.svg?branch=master)
 
-A JSON API Spec client for Ruby
+A JSON API client for Ruby
 
 ## Installation
 
@@ -22,244 +22,49 @@ Or install it yourself as:
 
     $ gem install munson
 
-## Usage
-
-### Munson::Connection and configuring the default connection
-
-Munson is designed to support multiple connections or API endpoints. A connection is a wrapper around Faraday::Connection that includes a few pieces of middleware for parsing and encoding requests and responses to JSON API Spec.
+## Basic Usage
 
 ```ruby
-Munson.configure(url: 'http://api.example.com') do |c|
-  c.use MyCustomMiddleware
+class Article < Munson::Resource
+  # This is done automatically if the tableize method is present
+  self.type = :articles
+
+  # how to process the JSON API ID. JSON API always uses strings, but Munson defaults to :integer
+  key_type :integer, #:string, ->(id){ }
+  attribute :title, :string
 end
 ```
 
-Options can be any [Faraday::Connection options](https://github.com/lostisland/faraday/blob/master/lib/faraday/connection.rb Faraday::Connection)
+### Registering the JSONAPI 'type'
 
-Additional connections can be created with:
-```ruby
-my_connection = Munson::Connection.new(url: 'http://api2.example.com') do |c|
-  c.use MoreMiddleware
-  c.use AllTheMiddlewares
-end
-```
+Calling ```Article.type = :articles``` registers the class ```Article``` as the handler for JSON API resources of the type ```articles```.
 
-### Munson::Agent
-
-Munson::Agent provides a small 'DSL' to build requests and parse responses,
-while allowing additional configuration for a particular 'resource.'
-
+When the ActiveSupport method ```tableize``` is present, this will be set automatically. A class can be bound to multiple types:
 
 ```ruby
-Munson.configure url: 'http://api.example.com'
-
-class Product
-  def self.munson
-    return @munson if @munson
-    @munson = Munson::Agent.new(
-      connection: Munson.default_connection, # || Munson::Connection.new(...)
-      paginator: :offset,
-      type: 'products'
-    )
-  end
-end
+Article.type = :articles
+Munson.register_type(:posts, Article)
 ```
 
-#### Getting the faraday response
+### Querying
 ```ruby
-query = Product.munson.filter(min_price: 30, max_price: 65)
-# its chainable
-query.filter(category: 'Hats').filter(size: ['small', 'medium'])
+articles = Article.fetch # Get some articles
+article = Article.find(9) # Find an article
 
-query.to_params
-#=> {:filter=>{:min_price=>"30", :max_price=>"65", :category=>"Hats", :size=>"small,medium"}}
+query = Article.fields(:title).include(:author, :comments).sort(id: :desc).filter(published: true)
+query.to_params #=> {:filter=>{:published=>"true"}, :fields=>{:articles=>"title"}, :include=>"author,comments", :sort=>"-id"}
+query.to_query_string #=> "fields[articles]=title&filter[published]=true&include=author,comments&sort=-id"
 
-Product.munson.get(params: query.to_params)
+query.fetch # Fetch articles w/ the given query string
 ```
 
-#### Filtering
-
-```ruby
-query = Product.munson.filter(min_price: 30, max_price: 65)
-# its chainable
-query.filter(category: 'Hats').filter(size: ['small', 'medium'])
-
-query.to_params
-#=> {:filter=>{:min_price=>"30", :max_price=>"65", :category=>"Hats", :size=>"small,medium"}}
-
-query.fetch #=> Some lovely data
-```
-
-#### Sorting
-
-```ruby
-query = Product.munson.sort(created_at: :desc)
-# its chainable
-query.sort(:price) # defaults to ASC
-
-query.to_params
-#=> {:sort=>"-created_at,price"}
-
-query.fetch #=> Some lovely data
-```
-
-#### Including (Side loading related resources)
-
-```ruby
-query = Product.munson.includes(:manufacturer)
-# its chainable
-query.includes(:vendor)
-
-query.to_params
-#=> {:include=>"manufacturer,vendor"}
-
-query.fetch #=> Some lovely data
-```
-
-#### Sparse Fieldsets
-
-```ruby
-query = Product.munson.fields(products: [:name, :price])
-# its chainable
-query.includes(:manufacturer).fields(manufacturer: [:name])
-
-query.to_params
-#=> {:fields=>{:products=>"name,price", :manufacturer=>"name"}, :include=>"manufacturer"}
-
-query.fetch #=> Some lovely data
-```
-
-#### All the things!
-```ruby
-query = Product.munson.
-  filter(min_price: 30, max_price: 65).
-  includes(:manufacturer).
-  sort(popularity: :desc, price: :asc).
-  fields(product: ['name', 'price'], manufacturer: ['name', 'website']).
-  page(number: 1, limit: 100)
-
-query.to_params
-#=> {:filter=>{:min_price=>"30", :max_price=>"65"}, :fields=>{:product=>"name,price", :manufacturer=>"name,website"}, :include=>"manufacturer", :sort=>"-popularity,price", :page=>{:limit=>10}}
-
-query.fetch #=> Some lovely data
-```
-
-#### Fetching a single resource
-
-```ruby
-Product.munson.find(1)
-```
-
-#### Paginating
-
-A paged and offset paginator are included with Munson.
-
-Using the ```offset``` paginator
-```ruby
-class Product
-  def self.munson
-    return @munson if @munson
-    @munson = Munson::Agent.new(
-      paginator: :offset,
-      type: 'products'
-    )
-  end
-end
-
-query = Product.munson.includes('manufacturer').page(offset: 10, limit: 25)
-query.to_params
-# => {:include=>"manufacturer", :page=>{:limit=>10, :offset=>10}}
-
-query.fetch #=> Some lovely data
-```
-
-Using the ```paged``` paginator
-```ruby
-class Product  
-  def self.munson
-    return @munson if @munson
-    @munson = Munson::Agent.new(
-      paginator: :paged,
-      type: 'products'
-    )
-  end
-end
-
-query = Product.munson.includes('manufacturer').page(page: 10, size: 25)
-query.to_params
-# => {:include=>"manufacturer", :page=>{:page=>10, :size=>10}}
-
-query.fetch #=> Some lovely data
-```
-
-##### Custom paginators
-Since the JSON API Spec does not dictate [how to paginate](http://jsonapi.org/format/#fetching-pagination), Munson has been designed to make adding custom paginators pretty easy.
-
-```ruby
-class CustomPaginator
-  # @param [Hash] Hash of options like max/default page size
-  def initialize(opts={})
-  end
-
-  # @param [Hash] Hash to set the 'limit' and 'offset' to be returned later by #to_params
-  def set(params={})
-  end
-
-  # @return [Hash] Params to be merged into query builder.
-  def to_params
-    { page: {} }
-  end
-end
-
-```
-
-### Munson::Resource
-
-A munson resource provides a DSL in the including class for doing common JSON API queries on your ruby class.
-
-It delegates a set of methods so that they dont have to be accessed through the ```munson``` class method and sets a few options based on the including class name.
-
-It also will alter the response objects coming from #fetch and #find. Instead of returning a json hash like
-when using the bare Munson::Agent, Munson::Resource will pass the JSON Spec attributes and the ID as a hash into your class's initializer.
-
-```ruby
-class Product
-  include Munson::Resource
-  register_munson_type :products
-end
-
-# Munson method is there, should you be looking for it.
-Product.munson #=> Munson::Agent
-```
-
-**Setting the type**
-
-This will cause Munson to return a hash instead of a class instance (Product).
-
-```ruby
-class Product
-  include Munson::Resource
-  munson.type = :products
-end
-```
-
-There are two ways to set the JSON API type when using a Munson::Resource
-
-**Registering the type**
-
-This will cause munson to return your model's datatype. Munson will register this in its type map dictionary and use the class to initialize a model
-
-```ruby
-class Product
-  include Munson::Resource
-  register_munson_type :products
-end
-```
+The Munson::Resource delegates a few methods to its underlying Munson::Connection:
 
 #### Filtering
 
 ```ruby
 query = Product.filter(min_price: 30, max_price: 65)
+
 # its chainable
 query.filter(category: 'Hats').filter(size: ['small', 'medium'])
 
@@ -273,6 +78,7 @@ query.fetch #=> Munson::Collection<Product,Product>
 
 ```ruby
 query = Product.sort(created_at: :desc)
+
 # its chainable
 query.sort(:price) # defaults to ASC
 
@@ -285,9 +91,10 @@ query.fetch #=> Munson::Collection<Product,Product>
 #### Including (Side loading related resources)
 
 ```ruby
-query = Product.includes(:manufacturer)
+query = Product.include(:manufacturer)
+
 # its chainable
-query.includes(:vendor)
+query.include(:vendor)
 
 query.to_params
 #=> {:include=>"manufacturer,vendor"}
@@ -299,8 +106,9 @@ query.fetch #=> Munson::Collection<Product,Product>
 
 ```ruby
 query = Product.fields(products: [:name, :price])
+
 # its chainable
-query.includes(:manufacturer).fields(manufacturer: [:name])
+query.include(:manufacturer).fields(manufacturer: [:name])
 
 query.to_params
 #=> {:fields=>{:products=>"name,price", :manufacturer=>"name"}, :include=>"manufacturer"}
@@ -318,6 +126,7 @@ query = Product.
   page(number: 1, limit: 100)
 
 query.to_params
+
 #=> {:filter=>{:min_price=>"30", :max_price=>"65"}, :fields=>{:product=>"name,price", :manufacturer=>"name,website"}, :include=>"manufacturer", :sort=>"-popularity,price", :page=>{:limit=>10}}
 
 query.fetch #=> Munson::Collection<Product,Product>
@@ -329,38 +138,252 @@ query.fetch #=> Munson::Collection<Product,Product>
 Product.find(1) #=> product
 ```
 
-#### Paginating
+### Accessing Munson internals
+Every Munson::Resource has an internally managed client. It is accessible via ```.munson```
 
-A paged and offset paginator are included with Munson.
-
-Using the ```offset``` paginator
 ```ruby
-class Product
-  include Munson::Resource
-  munson.paginator = :offset
-  munson.paginator_options = {default: 10, max: 100}
-end
-
-query = Product.includes('manufacturer').page(offset: 10, limit: 25)
-query.to_params
-# => {:include=>"manufacturer", :page=>{:limit=>10, :offset=>10}}
-
-query.fetch #=> Munson::Collection<Product,Product>
+Article.munson #=> Munson::Client
+Article.munson.path #=> base path to use for this resource. Defaults to "/" + type; i.e., "/articles"
+Article.munson.agent #=> Munson::Agent: the agent wraps the Munson::Connection. It performs the low level GET/POST/PUT/PATCH/DELETE methods
+Article.munson.query #=> Munson::Query: a chainable query building instance
+Article.munson.connection #=> Munson::Connection: Small wrapper around the Farady connection
+Article.munson.connection.response_key_format #=> :dasherize, :camelize, nil
+Article.munson.connection.url #=> This endpoints base URL http://api.example.com/
+Article.munson.connection.faraday #=> The faraday object for this connection
+Article.muson.connection = SomeNewConnectionYouPrefer
+Article.munson.connection.configure(opts) do { |faraday_conn| } #=> Feel free to reconfigure me ;D
 ```
 
-Using the ```paged``` paginator
+### Persistence Resources
 ```ruby
-class Product
-  include Munson::Resource
-  munson.paginator = :paged
-  munson.paginator_options = {default: 10, max: 100}
+class Article < Munson::Resource
+  attribute :title, :string
+  attribute :body, :string
+  attribute :created_at, :time
+end
+```
+
+Creating a new resource
+
+```ruby
+article = Article.new
+article.title = "This is a great read!"
+article.save #=> Boolean: Will attempt to POST to /articles
+article.errors?
+article.errors #=> Array of errors
+```
+
+Updating a resource
+
+```ruby
+article = Article.find(9)
+article.title = "This is a great read!"
+article.save #=> Boolean: Will attempt to PATCH to /articles
+article.errors?
+article.errors #=> Array of errors
+```
+
+### Accessing Side Loaded Resources
+
+Given the following relationship:
+
+```ruby
+class Article < Munson::Resource
+  self.type = :articles
+  has_one :author
+  has_many :comments
+
+  key_type :integer
+  attribute :title, :string
 end
 
-query = Product.includes('manufacturer').page(page: 10, size: 25)
-query.to_params
-# => {:include=>"manufacturer", :page=>{:page=>10, :size=>10}}
+class Person < Munson::Resource
+  self.type = :people
+  has_many :articles
 
-query.fetch #=> Some lovely data
+  attribute :first_name, String
+  attribute :last_name, :string
+  attribute :twitter, :string
+  attribute :created_at, :time, default: ->{ Time.now }, serialize: ->(val){ val.to_s }
+  attribute :post_count, :integer
+end
+
+class Comment < Munson::Resource
+  self.type = :comments
+  has_one :author
+
+  attribute :body, ->(val){ val.to_s }
+  attribute :score, :float
+  attribute :created_at, :time
+  attribute :is_spam, :boolean
+  attribute :mentions, :string, array: true
+end
+```
+
+**Note:** When specifying relationships in Munson, you are specifying the JSON API type name. You'll notice below that when ```.author``` is called it returns a person object. That it is because in the HTTP response, the relationship name is ```author``` but the resource type is ```people```.
+
+```json
+{
+  "data": [{
+    "type": "articles",
+    "id": "1",
+    "attributes": {
+      "title": "JSON API paints my bikeshed!"
+    },
+    "relationships": {
+      "author": {
+        "links": {
+          "self": "http://example.com/articles/1/relationships/author",
+          "related": "http://example.com/articles/1/author"
+        },
+        "data": { "type": "people", "id": "9" }
+      }
+    }
+  }]
+}
+```
+
+Munson initializes objects for side loaded resources. Only 1 HTTP call is made.
+
+```ruby
+article = Article.include(:author, :comments).find(9)
+article.author #=> Person object
+article.comments #=> Munson::Collection<Comment>
+
+article.author.first_name #=> Chauncy
+```
+
+
+
+## Configuration
+
+Munson is designed to support multiple connections or API endpoints. A connection is a wrapper around Faraday::Connection that includes a few pieces of middleware for parsing and encoding requests and responses to JSON API Spec.
+
+Setting the default connection:
+
+```ruby
+Munson.configure(url: 'http://api.example.com') do |c|
+  c.use MyCustomMiddleware
+  c.use AllTheMiddlewares
+end
+```
+
+Each Munson::Resource has its own Munson::Client. The client *copies* the default connection so its easy to set general configuration options, and overwrite them on a resource by resource basis.
+
+```ruby
+Munson.configure(url: 'http://api.example.com', response_key_format: :dasherize)
+
+class Kitten < Munson::Resource
+  munson.url = "http://api.differentsite.com"
+end
+
+# Overwritten URL
+Kitten.munson.connection.url #=> "http://api.differentsite.com"
+# Copied key format
+Kitten.munson.connection.response_key_format #=> :dasherize
+
+Munson.default_connection.url #=> "http://api.example.com"
+Munson.default_connection.response_key_format #=> :dasherize
+```
+
+### Configuration Options
+
+```ruby
+Munson.configure(url: 'http://api.example.com', response_key_format: :dasherize) do |conn|
+  conn.use SomeCoolFaradayMiddleware
+end
+```
+
+Two special options can be passed into ```.configure```:
+* ```url``` the base url for this endpoint
+* ```response_key_format``` the format of the JSONAPI response keys. Valid values are: ```:dasherize```, ```:camelize```, ```nil```
+
+Additinally any Faraday Connection options can be passed. [Faraday::Connection options](https://github.com/lostisland/faraday/blob/master/lib/faraday/connection.rb Faraday::Connection)
+
+
+## Advanced Usage
+
+### Custom Query Builder
+
+Since the filter param's format isn't specified in the [spec](http://jsonapi.org/format/#fetching-filtering)
+this implementation uses (JSONAPI::Resource's implementation](https://github.com/cerebris/jsonapi-resources#filters)
+
+To override, implement your own custom query builder inheriting from {Munson::Query}
+{Munson::Client} takes a Query class to use. This method could be overwritten in your Resource
+
+```ruby
+class MyBuilder < Munson::Query
+  def filter_to_query_value
+    # ... your fancier logic
+  end
+end
+
+Article.munson.query_builder = MyBuilder
+```
+
+### Without inheriting from Munson::Resource
+
+If for some reason you cannot inherit from Munson::Resource, you can still get a lot of JSONAPI parsing functionality
+
+```ruby
+class Album
+  # Just some attr accessors, NBD
+  attr_accessor :id
+  attr_accessor :title
+
+  # Give Album a client to use
+  def self.munson
+    return @munson if @munson
+    @munson = Munson::Client.new
+  end
+
+  # Set the type, note, this is not being set on self
+  munson.type = :albums
+
+  # Register the type w/ munson
+  Munson.register_type(munson.type, self)
+
+  # When you aren't inherited from Munson::Resource, Munson will pass a Munson::Document to a static method called munson_initializer for you to initialze your record as you wish
+  def self.munson_initializer(document)
+    new(document.id, document.attributes[:title])
+  end
+
+  def initialize(id, title)
+    @id    = id
+    @title = title
+  end
+end
+```
+
+```ruby
+albums = Album.munson.include(:songs).fetch
+albums.first.title #=> An album title!
+```
+
+### Any ol' object (Register type, add munson_initializer)
+
+As long as a class is registered with munson and it response to munson_initializer, Munson will be able to initialize the object with or without a client
+
+Extending the example above...
+
+```ruby
+class Song
+  attr_reader :name
+  def self.munson_initializer(document)
+    new(document.attributes[:name])
+  end
+
+  def initialize(name)
+    @name = name
+  end
+end
+
+Munson.register_type :songs, Song
+```
+
+```ruby
+album = Album.munson.include(:songs).find(9)
+album.songs #=> Munson::Collection<Song>
 ```
 
 ## Development
@@ -369,58 +392,23 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/coryodaniel/munson.
+Bug reports and pull requests are welcome on GitHub at https://github.com/stacksocial/munson.
 
-### Munson::Model
-WIP see [usage](#usage)
 
-Finding related resources could set instance methods that mix/override behavior of the class level agent...
-
-/articles/1
-Article.find(1) uses Article.munson
-
-/articles/1/author
-article = Article.find(1) uses Article.munson
-article.author uses article.munson as a new connection that sets the base uri to /articles/1
-
-## Usage
-```ruby
-address = Address.new
-address.state = "FL"
-address.save
-address.state = "CA"
-address.save
-# Mind mutex adding method accessors on... dangerous, see her, consider storing them in an @attributes hash...
-user = User.find(1)
-address = user.addresses.build
-address.save #posts on the relation
-
-address = Address.new({...})
-address = Address.new
-address.assign_attributes
-address.update_attributes
-address.dirty?
-
-Address.update(1, {}) #update without loading
-Address.destroy(1) #Destroy without loading
-
-address = Address.find(300)
-address.destroy
-
-Address.find(10)
-Address.filter(zip_code: 90210).find(10)
-Address.filter(zip_code: 90210).all
-Address.filter(zip_code: 90210).fetch
-Address.includes(:user, 'user.purchases').filter(active: true).all
-Address.includes(:user, 'user.purchases').find(10)
-Address.sort(city: :asc)
-Address.sort(city: :desc)
-Address.fields(:street1, :street2, {user: :name})
-Address.fields(:street1, :street2).fields(user: :name)
-addresses = Address.fields(:street1, :street2).fields(user: :name)
-addresses.first.shipped_products.filter(min_total: 300.00)
-
-Custom collection/member methods?
-```
+## TODOS
+* [ ] Update Yard docs :D
+* [ ] A few pending tests :/
+* [ ] Collection#next (queries for next page, if pagination present)
+* [ ] Related Documents/Resources taking advantage of underlying resource[links]
+  * [ ] Resource should provide relationship information to the underlying document ?
+* [ ] Error object to wrap an individual error
+* [ ] consider enumerable protocol on a query
+* [ ] Handle null/empty responses...
+* [ ] munson/rails - magic up all the things
+  * [ ] auto set type based on pluralization (self.type = :foos)
+  * [ ] http://api.rubyonrails.org/classes/ActiveModel/Dirty.html ?
+* [ ] Pluggable pagination (could it be a subclassed QueryBuilder? vs. a set of methods mixed into a query instance)
+* [ ] Query#find([...]) find multiple records

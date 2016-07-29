@@ -5,6 +5,8 @@ describe Munson do
     expect(Munson::VERSION).not_to be nil
   end
 
+  pending '.factory' #.factory?
+
   describe '.configure' do
     it "sets the default connection" do
       Munson.configure url: "http://example.com" do |c|

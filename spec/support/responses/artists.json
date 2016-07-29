@@ -1,0 +1,24 @@
+{
+  "data": [{
+    "type": "artists",
+    "id": "9",
+    "attributes": {
+      "name": "The Decemberists",
+      "twitter": "@TheDecemberists"
+    },
+    "links": {
+      "self": "http://example.com/artist/9"
+    }
+  },
+  {
+    "type": "artists",
+    "id": "10",
+    "attributes": {
+      "name": "Andrew Bird",
+      "twitter": "@andrewbird"
+    },
+    "links": {
+      "self": "http://example.com/artist/10"
+    }
+  }]
+}

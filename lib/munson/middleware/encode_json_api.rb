@@ -4,7 +4,12 @@ module Munson
       CONTENT_TYPE = 'Content-Type'.freeze
       ACCEPT       = 'Accept'.freeze
       MIME_TYPE    = 'application/vnd.api+json'.freeze
-      USER_AGENT   = 'User-Agent'
+      USER_AGENT   = 'User-Agent'.freeze
+
+      def initialize(app, key_formatter = nil)
+        super(app)
+        @key_formatter = key_formatter
+      end
 
       def call(env)
         env[:request_headers][USER_AGENT] = "Munson v#{Munson::VERSION}"
@@ -16,7 +21,8 @@ module Munson
       end
 
       def encode(data)
-        ::JSON.dump data
+        json = @key_formatter ? @key_formatter.externalize(data) : data
+        ::JSON.dump(json)
       end
 
       def match_content_type(env)
@@ -43,3 +49,5 @@ module Munson
     end
   end
 end
+
+Faraday::Request.register_middleware :"Munson::Middleware::EncodeJsonApi" => Munson::Middleware::EncodeJsonApi
