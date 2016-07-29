@@ -34,7 +34,7 @@ module Munson
     #   end
     #
     #   class User < Munson::Resource
-    #     type = :users
+    #     self.type = :users
     #     munson.connection = $my_connection
     #   end
     def initialize(args, &block)

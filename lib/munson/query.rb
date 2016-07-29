@@ -7,6 +7,7 @@ module Munson
     # @param [Munson::Client] client
     def initialize(client = nil)
       @client   = client
+      @headers  = {}
       @values    = {
         include: [],
         fields:  [],
@@ -18,7 +19,7 @@ module Munson
 
     def fetch
       if @client
-        response = @client.agent.get(params: to_params)
+        response = @client.agent.get(params: to_params, headers: @headers)
         ResponseMapper.new(response.body).collection
       else
         raise Munson::ClientNotSet, "Client was not set. Query#new(client)"
@@ -27,7 +28,7 @@ module Munson
 
     def find(id)
       if @client
-        response = @client.agent.get(id: id, params: to_params)
+        response = @client.agent.get(id: id, params: to_params, headers: @headers)
         ResponseMapper.new(response.body).resource
       else
         raise Munson::ClientNotSet, "Client was not set. Query#new(client)"
@@ -64,6 +65,20 @@ module Munson
     # @return [Munson::Query] self for chaining queries
     def page(opts={})
       @values[:page].merge!(opts)
+      self
+    end
+
+    # Chainably set headers
+    #
+    # @example set a header
+    #   Munson::Query.new.headers("X-API-TOKEN" => "banana")
+    #
+    # @example set headers
+    #   Munson::Query.new.headers("X-API-TOKEN" => "banana", "X-API-VERSION" => "1.3")
+    #
+    # @return [Munson::Query] self for chaining queries
+    def headers(opts={})
+      @headers.merge!(opts)
       self
     end
 

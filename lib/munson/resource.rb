@@ -1,4 +1,5 @@
 class Munson::Resource
+  extend Forwardable
   attr_reader :document
   attr_reader :attributes
 
@@ -17,6 +18,7 @@ class Munson::Resource
       @document = Munson::Document.new(
         data: {
           type: self.class.type,
+          id: attrs.delete(:id),
           attributes: attrs
         }
       )
@@ -43,21 +45,20 @@ class Munson::Resource
   end
 
   def save
-    document.attributes = serialized_attributes
-    response = if persisted?
-      agent.patch(id: id.to_s, body: document.to_h)
-    else
-      agent.post(body: document.to_h)
-    end
-
-    @document = Munson::Document.new(response.body)
-    response.success?
+    @document = document.save(agent)
+    !errors?
   end
 
+  # @return [Array<Hash>] array of JSON API errors
   def errors
     document.errors
   end
 
+  def errors?
+    document.errors.any?
+  end
+
+  # @return [Munson::Agent] a new {Munson::Agent} instance
   def agent
     self.class.munson.agent
   end
@@ -76,6 +77,12 @@ class Munson::Resource
   end
 
   class << self
+    def inherited(subclass)
+      if subclass.to_s.respond_to?(:tableize)
+        subclass.type = subclass.to_s.tableize.to_sym
+      end
+    end
+
     def key_type(type)
       @key_type = type
     end
@@ -106,6 +113,7 @@ class Munson::Resource
 
       class_eval <<-RUBY, __FILE__, __LINE__ + 1
         def #{attribute_name}=(val)
+          document.attributes[:#{attribute_name}] = self.class.schema[:#{attribute_name}].serialize(val)
           @attributes[:#{attribute_name}] = val
         end
       RUBY
@@ -142,15 +150,21 @@ class Munson::Resource
       @munson
     end
 
+    # Set the JSONAPI type
     def type=(type)
       Munson.register_type(type, self)
       munson.type = type
     end
 
+    # Get the JSONAPI type
     def type
       munson.type
     end
 
+    # Overwrite Connection#fields delegator to allow for passing an array of fields
+    # @example
+    #   Cat.fields(:name, :favorite_toy) #=> Query(fields[cats]=name,favorite_toy)
+    #   Cat.fields(name, owner: [:name]) #=> Query(fields[cats]=name&fields[people]=name)
     def fields(*args)
       hash_fields = args.last.is_a?(Hash) ? args.pop : {}
       hash_fields[type] = args if args.any?

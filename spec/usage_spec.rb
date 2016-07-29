@@ -46,7 +46,7 @@ RSpec.describe 'Usage' do
     json = {
       data: {
         type: :people,
-        id: author.id,
+        id: author.id.to_s,
         attributes: {
           "first-name" => "Tomas",
           "last-name" => "Blunderbee",

@@ -7,14 +7,26 @@ module Munson
       @id   = jsonapi_document[:data][:id]
       @type = jsonapi_document[:data][:type].to_sym
       @jsonapi_document = jsonapi_document
+
+      if jsonapi_document[:data] && jsonapi_document[:data][:attributes]
+        @original_attributes = jsonapi_document[:data][:attributes].clone
+        @attributes          = jsonapi_document[:data][:attributes].clone
+      else
+        @original_attributes = {}
+        @attributes          = {}
+      end
     end
 
     # @return [Hash] hash for persisting this JSON API Resource via POST/PATCH/PUT
-    def to_h
-      payload = { data: { type: @type } }
-      payload[:data][:id] = id if id
-      payload[:data][:attributes] = attributes
-      payload
+    def payload
+      doc = { data: { type: @type } }
+      if id
+        doc[:data][:id] = id
+        doc[:data][:attributes] = changed
+      else
+        doc[:data][:attributes] = attributes
+      end
+      doc
     end
 
     def data
@@ -26,11 +38,39 @@ module Munson
     end
 
     def attributes
-      data[:attributes] || {}
+      @attributes
     end
 
     def attributes=(attrs)
-      data[:attributes] = attrs
+      @attributes.merge!(attrs)
+    end
+
+    def changes
+      attributes.reduce({}) do |memo, (k,v)|
+        if @original_attributes[k] != attributes[k]
+          memo[k] = [@original_attributes[k], attributes[k]]
+        end
+        memo
+      end
+    end
+
+    def changed
+      attributes.reduce({}) do |memo, (k,v)|
+        if @original_attributes[k] != attributes[k]
+          memo[k] = attributes[k]
+        end
+        memo
+      end
+    end
+
+    def save(agent)
+      response = if id
+        agent.patch(id: id.to_s, body: payload)
+      else
+        agent.post(body: payload)
+      end
+
+      Munson::Document.new(response.body)
     end
 
     def url

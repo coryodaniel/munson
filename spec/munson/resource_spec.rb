@@ -14,9 +14,6 @@ describe Munson::Resource do
       expect(FooResource.format_id("3")).to eq 3
     end
 
-    # key_type :string
-    # key_type ->(key){ key.to_s }
-
     context "when key_type is :string" do
       after{ FooResource.key_type :integer }
       it "returns a string" do

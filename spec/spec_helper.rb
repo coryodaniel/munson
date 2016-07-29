@@ -1,6 +1,7 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
+SimpleCov.start
 require 'webmock/rspec'
 require 'pry-byebug'
 
