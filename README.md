@@ -306,10 +306,10 @@ Additinally any Faraday Connection options can be passed. [Faraday::Connection o
 ### Custom Query Builder
 
 Since the filter param's format isn't specified in the [spec](http://jsonapi.org/format/#fetching-filtering)
-this implementation uses (JSONAPI::Resource's implementation](https://github.com/cerebris/jsonapi-resources#filters)
+this implementation uses [JSONAPI::Resource's implementation](https://github.com/cerebris/jsonapi-resources#filters)
 
-To override, implement your own custom query builder inheriting from {Munson::Query}
-{Munson::Client} takes a Query class to use. This method could be overwritten in your Resource
+To override, implement your own custom query builder inheriting from ```Munson::Query```.
+```Munson::Client``` takes a Query class to use. This method could be overwritten in your Resource:
 
 ```ruby
 class MyBuilder < Munson::Query
@@ -319,6 +319,7 @@ class MyBuilder < Munson::Query
 end
 
 Article.munson.query_builder = MyBuilder
+Article.munson.filter(:name => "Chauncy") #=> MyBuilder instance
 ```
 
 ### Without inheriting from Munson::Resource
@@ -400,15 +401,12 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/stacks
 
 ## TODOS
 * [ ] Update Yard docs :D
+* [ ] Posting/Putting relationships
 * [ ] A few pending tests :/
 * [ ] Collection#next (queries for next page, if pagination present)
 * [ ] Related Documents/Resources taking advantage of underlying resource[links]
-  * [ ] Resource should provide relationship information to the underlying document ?
 * [ ] Error object to wrap an individual error
 * [ ] consider enumerable protocol on a query
 * [ ] Handle null/empty responses...
-* [ ] munson/rails - magic up all the things
-  * [ ] auto set type based on pluralization (self.type = :foos)
-  * [ ] http://api.rubyonrails.org/classes/ActiveModel/Dirty.html ?
-* [ ] Pluggable pagination (could it be a subclassed QueryBuilder? vs. a set of methods mixed into a query instance)
+* [ ] Pluggable pagination?
 * [ ] Query#find([...]) find multiple records
