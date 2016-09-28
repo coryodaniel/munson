@@ -73,7 +73,9 @@ class Munson::Resource
   end
 
   def ==(other)
-    self.class.type == other.class.type && self.id == other.id
+    return false if !other
+
+    self.class.type == other.class.try(:type) && self.id == other.id
   end
 
   class << self
