@@ -43,7 +43,10 @@
       "twitter": "chauncy",
 
       "post-count": 1,
-      "created-at": "2016-05-23T18:25:43.511Z"
+      "created-at": "2016-05-23T18:25:43.511Z",
+      "meta": {
+        "last-ip": "127.0.0.1"
+      }
     },
     "links": {
       "self": "http://example.com/people/9"

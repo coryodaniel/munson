@@ -26,7 +26,9 @@ describe Munson::Connection do
 
         body = connection.get.body
         keys = body[:included].first[:attributes].keys
-        expect(keys).to eq([:first_name, :last_name, :twitter, :post_count, :created_at])
+        expect(keys).to eq(
+          [:first_name, :last_name, :twitter, :post_count, :created_at, :meta]
+        )
       end
 
       it "formats request body keys" do
