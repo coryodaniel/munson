@@ -41,6 +41,7 @@ RSpec.describe 'Usage' do
     author.first_name = "Tomas"
     author.last_name = "Blunderbee"
     author.twitter = "blunderz"
+    author.meta['spam-score'] = "0"
     expect(author.first_name).to eq 'Tomas'
 
     json = {
@@ -50,7 +51,11 @@ RSpec.describe 'Usage' do
         attributes: {
           "first-name" => "Tomas",
           "last-name" => "Blunderbee",
-          "twitter" => "blunderz"
+          "twitter" => "blunderz",
+          "meta" => {
+            "last-ip" => "127.0.0.1",
+            "spam-score" => "0"
+          }
         }
       }
     }

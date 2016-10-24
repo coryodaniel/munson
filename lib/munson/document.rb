@@ -1,3 +1,5 @@
+require 'core_ext/object/deep_dup'
+
 module Munson
   class Document
     attr_accessor :id
@@ -9,8 +11,8 @@ module Munson
       @jsonapi_document = jsonapi_document
 
       if jsonapi_document[:data] && jsonapi_document[:data][:attributes]
-        @original_attributes = jsonapi_document[:data][:attributes].clone
-        @attributes          = jsonapi_document[:data][:attributes].clone
+        @original_attributes = jsonapi_document[:data][:attributes]
+        @attributes          = jsonapi_document[:data][:attributes].deep_dup
       else
         @original_attributes = {}
         @attributes          = {}

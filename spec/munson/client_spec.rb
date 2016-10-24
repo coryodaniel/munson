@@ -32,7 +32,7 @@ describe Munson::Client do
   describe '.path' do
     it 'defaults to the type' do
       client = Munson::Client.new.configure {|c| c.type = :kittens}
-      expect(client.path).to eq '/kittens'
+      expect(client.path).to eq 'kittens'
     end
   end
 

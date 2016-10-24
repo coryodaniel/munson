@@ -19,6 +19,7 @@ class Person < Munson::Resource
   attribute :twitter, :string
   attribute :created_at, :time, default: ->{ Time.now }, serialize: ->(val){ val.to_s }
   attribute :post_count, :integer
+  attribute :meta, :hash
 end
 
 class Comment < Munson::Resource

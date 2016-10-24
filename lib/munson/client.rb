@@ -24,7 +24,7 @@ module Munson
     end
 
     def path
-      @path || "/#{type}"
+      @path || type.to_s
     end
 
     def configure(&block)
