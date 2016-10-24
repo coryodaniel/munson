@@ -108,7 +108,7 @@ class Munson::Resource
       @schema ||= {}
     end
 
-    def attribute(attribute_name, cast_type, **options)
+    def attribute(attribute_name, cast_type, options = {})
       schema[attribute_name] = Munson::Attribute.new(attribute_name, cast_type, options)
 
       class_eval <<-RUBY, __FILE__, __LINE__ + 1

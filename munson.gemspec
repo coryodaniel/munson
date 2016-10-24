@@ -24,8 +24,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency 'rspec-mocks'
-  spec.add_development_dependency "pry"
-  spec.add_development_dependency "pry-byebug"
+  spec.add_development_dependency "guard-rspec"
+  spec.add_development_dependency "pry", "= 0.9.10"
+  spec.add_development_dependency "pry-nav"
+  spec.add_development_dependency "json", "= 1.8"
   spec.add_development_dependency 'yard'
   spec.add_development_dependency 'webmock'
 end

@@ -119,9 +119,11 @@ module Munson
       relationships[name] ? relationships[name][:data] : nil
     end
 
+    private
+
     # @param [Hash] relationship from JSONAPI relationships hash
     # @return [Munson::Document,nil] the included relationship, if found
-    private def find_included_item(relationship)
+    def find_included_item(relationship)
       resource = included.find do |included_resource|
         included_resource[:type] == relationship[:type] &&
           included_resource[:id] == relationship[:id]

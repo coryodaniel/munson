@@ -3,12 +3,17 @@ module Munson
     include Enumerable
     extend Forwardable
     def_delegator :@collection, :last
-    
+
     attr_reader :meta
     attr_reader :jsonapi
     attr_reader :links
 
-    def initialize(collection=[], errors: nil, meta: nil, jsonapi: nil, links: nil)
+    def initialize(collection=[], opts = {})
+      errors  = opts[:errors]
+      meta    = opts[:meta]
+      jsonapi = opts[:jsonapi]
+      links   = opts[:links]
+
       @collection = collection
       @meta       = meta
       @jsonapi    = jsonapi

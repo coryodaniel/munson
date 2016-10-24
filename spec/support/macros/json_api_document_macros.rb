@@ -2,7 +2,9 @@ module Munson
   module RSpec
     module Macros
       module JsonApiDocumentMacros
-        def create_payload(type, attribs, id: nil, relationships: nil)
+        def create_payload(type, attribs, opts = {})
+          id = opts[:id]
+          relationships = opts[:relationships]
           object = {
             type: type,
             attributes: attribs

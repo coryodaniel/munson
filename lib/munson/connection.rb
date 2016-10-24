@@ -55,7 +55,11 @@ module Munson
     # @option [String] path: nil to GET
     # @option [Hash] headers: nil HTTP Headers
     # @return [Faraday::Response]
-    def get(path: nil, params: nil, headers: nil)
+    def get(opts = {})
+      path    = opts[:path]
+      params  = opts[:params]
+      headers = opts[:headers]
+
       faraday.get do |request|
         request.headers.merge!(headers) if headers
         request.url path.to_s, externalize_keys(params)
@@ -69,7 +73,12 @@ module Munson
     # @option [Hash] headers: nil HTTP Headers
     # @option [Type] http_method: :post describe http_method: :post
     # @return [Faraday::Response]
-    def post(body: {}, path: nil, headers: nil, http_method: :post)
+    def post(opts = {})
+      body    = opts[:body] || {}
+      path    = opts[:path]
+      headers = opts[:headers]
+      http_method = opts[:http_method] || :post
+
       faraday.send(http_method) do |request|
         request.headers.merge!(headers) if headers
         request.url path.to_s
@@ -131,11 +140,13 @@ module Munson
       @options[:response_key_format]
     end
 
-    private def key_formatter
+    private
+
+    def key_formatter
       response_key_format ? Munson::KeyFormatter.new(response_key_format) : nil
     end
 
-    private def externalize_keys(value)
+    def externalize_keys(value)
       if response_key_format && value.is_a?(Hash)
         key_formatter.externalize(value)
       else

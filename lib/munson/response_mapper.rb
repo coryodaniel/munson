@@ -99,15 +99,16 @@ module Munson
       (data + included)
     end
 
-    private def errors?
+    private
+    def errors?
       @body[:errors].is_a?(Array)
     end
 
-    private def resource?
+    def resource?
       @body[:data].is_a?(Hash)
     end
 
-    private def collection?
+    def collection?
       @body[:data].is_a?(Array)
     end
   end

@@ -152,21 +152,6 @@ module Munson
       }.join(',')
     end
 
-    def fields_to_query_value
-      @values[:fields].inject({}) do |acc, hash_arg|
-        hash_arg.each do |k,v|
-          acc[k] ||= []
-          v.is_a?(Array) ?
-            acc[k] += v :
-            acc[k] << v
-
-          acc[k].map(&:to_s).uniq!
-        end
-
-        acc
-      end.map { |k, v| [k, v.join(',')] }.to_h
-    end
-
     def include_to_query_value
       @values[:include].map(&:to_s).sort.join(',')
     end
@@ -195,23 +180,49 @@ module Munson
     #   end
     #
     def filter_to_query_value
-      @values[:filter].reduce({}) do |acc, hash_arg|
+      filters = @values[:filter].reduce({}) do |acc, hash_arg|
         hash_arg.each do |k,v|
           acc[k] ||= []
           v.is_a?(Array) ? acc[k] += v : acc[k] << v
           acc[k].uniq!
         end
         acc
-      end.map { |k, v| [k, v.join(',')] }.to_h
+      end
+
+      array_to_hash filters.map { |k, v| [k, v.join(',')] }
+    end
+
+    def fields_to_query_value
+      fields = @values[:fields].inject({}) do |acc, hash_arg|
+        hash_arg.each do |k,v|
+          acc[k] ||= []
+          v.is_a?(Array) ?
+            acc[k] += v :
+            acc[k] << v
+
+          acc[k].map(&:to_s).uniq!
+        end
+
+        acc
+      end
+
+      array_to_hash fields.map { |k, v| [k, v.join(',')] }
     end
 
     def validate_sort_args(hashes)
       hashes.each do |hash|
         hash.each do |k,v|
-          if !%i(desc asc).include?(v.to_sym)
+          if ![:desc, :asc].include?(v.to_sym)
             raise Munson::UnsupportedSortDirectionError, "Unknown direction '#{v}'. Use :asc or :desc"
           end
         end
+      end
+    end
+
+    def array_to_hash(ary)
+      ary.reduce({}) do |agg, (k,v)|
+        agg[k] = v
+        agg
       end
     end
   end

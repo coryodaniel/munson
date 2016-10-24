@@ -3,10 +3,10 @@ module Munson
     # Creates a new Munson::Agent
     #
     # @param [#to_s] path to JSON API Resource. Path will be added to the base path set in the Faraday::Connection
-    # @param [Munson::Connection] connection to use
-    def initialize(path, connection: nil)
+    # @param [Munson::Connection] :connection object
+    def initialize(path, opts = {})
       @path       = path
-      @connection = connection
+      @connection = opts[:connection]
     end
 
     # Connection that will be used for HTTP requests
@@ -24,7 +24,12 @@ module Munson
     # @option [Hash] headers: nil HTTP Headers
     # @option [String,Fixnum] id: nil ID to append to @path (provided in #new) when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def get(params: nil, path: nil, headers: nil, id: nil)
+    def get(opts = {})
+      params  = opts[:params]
+      path    = opts[:path]
+      headers = opts[:headers]
+      id      = opts[:id]
+
       connection.get(
         path: negotiate_path(path, id),
         params: params,
@@ -50,7 +55,13 @@ module Munson
     # @option [Type] http_method: :post describe http_method: :post
     # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def post(body: {}, path: nil, headers: nil, http_method: :post, id: nil)
+    def post(opts = {})
+      body        = opts[:body] || {}
+      path        = opts[:path]
+      headers     = opts[:headers]
+      http_method = opts[:http_method] || :post
+      id          = opts[:id]
+
       connection.post(
         path: negotiate_path(path, id),
         body: body,
@@ -66,7 +77,12 @@ module Munson
     # @option [Hash] headers: nil HTTP Headers
     # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def patch(body: nil, path: nil, headers: nil, id: nil)
+    def patch(opts = {})
+      body        = opts[:body] || {}
+      path        = opts[:path]
+      headers     = opts[:headers]
+      id          = opts[:id]
+
       post(body: body, path: path, headers: headers, http_method: :patch, id: id)
     end
 
@@ -77,7 +93,11 @@ module Munson
     # @option [Hash] headers: nil HTTP Headers
     # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def put(body: nil, path: nil, headers: nil, id: nil)
+    def put(opts = {})
+      body        = opts[:body] || {}
+      path        = opts[:path]
+      headers     = opts[:headers]
+      id          = opts[:id]
       post(body: body, path: path, headers: headers, http_method: :put, id: id)
     end
 
@@ -88,7 +108,11 @@ module Munson
     # @option [Hash] headers: nil HTTP Headers
     # @option [String,Fixnum] id: nil ID to append to default path when accessing a resource. If :path and :id are both specified, :path wins
     # @return [Faraday::Response]
-    def delete(body: nil, path: nil, headers: nil, id: nil)
+    def delete(opts = {})
+      body        = opts[:body] || {}
+      path        = opts[:path]
+      headers     = opts[:headers]
+      id          = opts[:id]
       post(body: body, path: path, headers: headers, http_method: :delete, id: id)
     end
   end
