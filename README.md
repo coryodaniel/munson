@@ -2,7 +2,7 @@
 
 [![Code Climate](https://codeclimate.com/github/coryodaniel/munson/badges/gpa.svg)](https://codeclimate.com/github/coryodaniel/munson)
 [![Test Coverage](https://codeclimate.com/github/coryodaniel/munson/badges/coverage.svg)](https://codeclimate.com/github/coryodaniel/munson/coverage)
-![Build Status](https://travis-ci.org/stacksocial/munson.svg?branch=master)
+![Build Status](https://travis-ci.org/coryodaniel/munson.svg?branch=master)
 
 A JSON API client for Ruby
 
