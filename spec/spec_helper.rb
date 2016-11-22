@@ -1,6 +1,5 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require "codeclimate-test-reporter"
-CodeClimate::TestReporter.start
+require 'simplecov'
 SimpleCov.start
 require 'webmock/rspec'
 require 'pry-byebug' unless defined?(JRUBY_VERSION)
@@ -15,7 +14,7 @@ require 'support/matchers/have_data'
 Munson.configure url: 'http://api.example.com'
 
 Dir["spec/support/app/*"].each{ |f| load f }
-WebMock.disable_net_connect!(allow: "codeclimate.com")
+WebMock.disable_net_connect!
 
 RSpec.configure do |c|
   c.include Munson::RSpec::Macros::JsonApiDocumentMacros
