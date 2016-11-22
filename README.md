@@ -1,8 +1,9 @@
 # Munson
 
+[![Gem Version](https://badge.fury.io/rb/munson.svg)](https://badge.fury.io/rb/munson)
 [![Code Climate](https://codeclimate.com/github/coryodaniel/munson/badges/gpa.svg)](https://codeclimate.com/github/coryodaniel/munson)
 [![Test Coverage](https://codeclimate.com/github/coryodaniel/munson/badges/coverage.svg)](https://codeclimate.com/github/coryodaniel/munson/coverage)
-![Build Status](https://travis-ci.org/coryodaniel/munson.svg?branch=master)
+[![Build Status](https://travis-ci.org/coryodaniel/munson.svg?branch=develop)](https://travis-ci.org/coryodaniel/munson)
 
 A JSON API client for Ruby
 
@@ -396,7 +397,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/stacksocial/munson.
+Bug reports and pull requests are welcome on GitHub at https://github.com/coryodaniel/munson. Base hotfixes off of the `master` branch and features off of the `develop` branch.
 
 
 ## TODOS
