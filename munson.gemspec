@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
   spec.add_development_dependency 'rspec-mocks'
   spec.add_development_dependency "pry"
-  spec.add_development_dependency "pry-byebug"
+  spec.add_development_dependency "pry-byebug" unless defined?(JRUBY_VERSION)
   spec.add_development_dependency 'yard'
   spec.add_development_dependency 'webmock'
 end

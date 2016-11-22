@@ -3,7 +3,7 @@ require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
 SimpleCov.start
 require 'webmock/rspec'
-require 'pry-byebug'
+require 'pry-byebug' unless defined?(JRUBY_VERSION)
 
 require 'munson'
 
