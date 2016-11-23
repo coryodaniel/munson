@@ -151,7 +151,7 @@ Article.munson.connection #=> Munson::Connection: Small wrapper around the Farad
 Article.munson.connection.response_key_format #=> :dasherize, :camelize, nil
 Article.munson.connection.url #=> This endpoints base URL http://api.example.com/
 Article.munson.connection.faraday #=> The faraday object for this connection
-Article.muson.connection = SomeNewConnectionYouPrefer
+Article.munson.connection = SomeNewConnectionYouPrefer
 Article.munson.connection.configure(opts) do { |faraday_conn| } #=> Feel free to reconfigure me ;D
 ```
 
