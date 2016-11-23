@@ -96,6 +96,9 @@ module Munson
     #   Munson::Connection.new url: "http://api.example.com" do |c|
     #     c.use MyTokenAuth
     #   end
+    #
+    # @example Use a custom adapter
+    #   Munson::Connection.new adapter: [:rack, MyRackApp.new]
     def configure(args={}, &block)
       # Cache these for #clone method
       @options = args
@@ -108,7 +111,7 @@ module Munson
         conn.request :"Munson::Middleware::EncodeJsonApi", key_formatter
         conn.response :"Munson::Middleware::JsonParser", key_formatter
 
-        conn.adapter Faraday.default_adapter
+        conn.adapter(*@options.fetch(:adapter, Faraday.default_adapter))
       end
     end
 

@@ -95,18 +95,43 @@ describe Munson::Connection do
   end
 
   describe '#initialize' do
+    before do
+      stub_const 'MyRackApp', Class.new do
+        def call(env)
+          [200, {'Content-Type' => 'text/html'}, ["hello world"]]
+        end
+      end
+    end
+
     it "configues the faraday connection" do
       connection = Munson::Connection.new(url: "http://example.com")
       expect(connection.faraday.url_prefix.to_s).to eq "http://example.com/"
     end
 
     context 'when passing a block' do
-      it 'configures faraday middlware' do
+      it 'configures faraday middleware' do
         connection = Munson::Connection.new(url: "http://example.com") do |c|
           c.use TestMiddleware
         end
 
         expect(connection.faraday.builder.handlers).to include TestMiddleware
+        expect(connection.faraday.builder.handlers.last).to eq Faraday::Adapter::NetHttp
+      end
+    end
+
+    context 'with a custom adapter' do
+      it 'configures faraday middleware' do
+        connection = Munson::Connection.new(adapter: :net_http_persistent)
+
+        expect(connection.faraday.builder.handlers.last).to eq Faraday::Adapter::NetHttpPersistent
+      end
+    end
+
+    context 'with a custom adapter with arguments' do
+      it 'configures faraday middleware' do
+        connection = Munson::Connection.new(adapter: [:rack, MyRackApp.new])
+
+        expect(connection.faraday.builder.handlers.last).to eq Faraday::Adapter::Rack
       end
     end
   end
