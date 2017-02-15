@@ -177,7 +177,7 @@ class Munson::Resource
       munson.fields(hash_fields)
     end
 
-    [:include, :sort, :filter, :fetch, :find, :page].each do |method|
+    [:include, :sort, :filter, :fetch, :fetch_from, :find, :page].each do |method|
       class_eval <<-RUBY, __FILE__, __LINE__ + 1
         def #{method}(*args)
           munson.#{method}(*args)
