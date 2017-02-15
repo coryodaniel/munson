@@ -1,7 +1,7 @@
 module Munson
   class Client
     extend Forwardable
-    def_delegators :query, :include, :sort, :filter, :fields, :fetch, :page, :find
+    def_delegators :query, :include, :sort, :filter, :fields, :fetch, :fetch_from, :page, :find
     def_delegators :connection, :url=, :url, :response_key_format, :response_key_format=
 
     attr_writer :path
