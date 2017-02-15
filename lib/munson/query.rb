@@ -26,6 +26,20 @@ module Munson
       end
     end
 
+    # Allow fetching from a custom endpoint
+    #
+    # @param [#to_s] path to custom endpoint off of resource
+    # @option [Boolean] collection: true does this endpoint return a collection or a single resource
+    def fetch_from(endpoint, collection: true)
+      if @client
+        path = [@client.agent.negotiate_path, endpoint.gsub(/^\//, '')].join('/')
+        response = @client.agent.get(path: path, params: to_params, headers: @headers)
+        ResponseMapper.new(response.body).send(collection ? :collection : :resource)
+      else
+        raise Munson::ClientNotSet, "Client was not set. Query#new(client)"
+      end
+    end
+
     def find(id)
       if @client
         response = @client.agent.get(id: id, params: to_params, headers: @headers)

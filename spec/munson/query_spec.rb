@@ -29,6 +29,19 @@ describe Munson::Query do
     end
   end
 
+  describe '#fetch_from' do
+    it 'returns a Munson::Collection' do
+      stub_api_request(:albums_top_include_artist)
+
+      client = Munson::Client.new(type: :albums)
+      query   = Munson::Query.new(client)
+      albums  = query.include(:artist).fetch_from('/top')
+
+      expect(albums).to be_a(Munson::Collection)
+      expect(albums.first).to be_a(Album)
+    end
+  end
+
   describe '#to_query_string' do
     describe 'doing all the things' do
       it 'generates a query string' do
