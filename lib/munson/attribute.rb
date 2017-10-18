@@ -1,3 +1,5 @@
+require 'date'
+
 module Munson
   class Attribute
     attr_reader :name
