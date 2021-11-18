@@ -25,6 +25,7 @@ module Munson
   class RelationshipNotIncludedError < Munson::Error; end;
   class RelationshipNotFound < Munson::Error; end;
   class ClientNotSet < Munson::Error; end;
+  class RecordNotFound < Munson::Error; end;
   @registered_types = {}
 
   class << self

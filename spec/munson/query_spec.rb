@@ -14,6 +14,16 @@ describe Munson::Query do
 
       expect(album).to be_a(Album)
     end
+
+    context 'when call an absent record' do
+      it 'raises 404' do
+        stub_api_request(:album_404, status: 404)
+
+        client = Munson::Client.new(type: :albums)
+        query  = Munson::Query.new(client)
+        expect { query.find(1) }.to raise_exception(Munson::RecordNotFound)
+      end
+    end
   end
 
   describe '#fetch' do

@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "code": "not_found",
+      "status": "404",
+      "title": "Not Found",
+      "meta": {}
+    }
+  ]
+}

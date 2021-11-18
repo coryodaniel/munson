@@ -29,6 +29,8 @@ module Munson
     def find(id)
       if @client
         response = @client.agent.get(id: id, params: to_params, headers: @headers)
+        raise Munson::RecordNotFound, response.body if response.status == 404
+
         ResponseMapper.new(response.body).resource
       else
         raise Munson::ClientNotSet, "Client was not set. Query#new(client)"
